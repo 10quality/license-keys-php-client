@@ -132,7 +132,9 @@ class LicenseRequest
                 return $this->data;
             case 'is_valid':
                 $value = false;
-                if (isset($this->data)
+                if (isset($this->settings['frequency'])
+                    && !empty($this->settings['frequency'])
+                    && isset($this->data)
                     && !empty($this->data)
                     && is_numeric($this->data['activation_id'])
                 ) {

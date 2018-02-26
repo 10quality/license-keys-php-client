@@ -148,4 +148,21 @@ class RequestTest extends Api_TestCase
             (string)$license
         );
     }
+    /**
+     * Tests invalidation of license due to missing frequency.
+     * @since 1.0.0
+     */
+    public function testUnsetFrequency()
+    {
+        // Prepare
+        $license = new LicenseRequest(
+            '{"settings":{"url":"http:\/\/localhost\/test","next_check":100},'
+                .'"request":{"store_code":"STORECODE4","sku":"SKU1","license_key":"aKey-777"},'
+                .'"data":{"expire":999999999999,"activation_id":404,"expire_date":"2020-02-25 18:57",'
+                .'"timezone":"UTC","the_key":"aKey-777","url":"http:\/\/localhost\/test\/?key=aKey-777",'
+                .'"has_expired":false,"status":"active","allow_offline":true,"offline_interval":"days","offline_value":1}}'
+        );
+        // Assert properties
+        $this->assertFalse($license->is_valid);
+    }
 }
