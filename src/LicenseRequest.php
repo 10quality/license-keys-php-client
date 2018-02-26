@@ -54,7 +54,7 @@ class LicenseRequest
      *
      * @param string $license License data encoded as JSON.
      */
-    public function __construct(string $license)
+    public function __construct($license)
     {
         $license = json_decode($license);
         if (isset($license->settings))
@@ -85,7 +85,7 @@ class LicenseRequest
      *
      * @return object|LicenseRequest
      */
-    public static function create(string $url, string $store_code, string $sku, string $license_key, string $frequency = self::DAILY_FREQUENCY)
+    public static function create($url, $store_code, $sku, $license_key, $frequency = self::DAILY_FREQUENCY)
     {
         $license = [
             'settings'  => [
