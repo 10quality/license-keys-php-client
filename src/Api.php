@@ -70,21 +70,36 @@ class Api
         if ($license->data['has_expired'])
             return false;
         // Validate cached license data
-        if (time() < $license->next_check
-            && $license->is_valid
+        if (time() < $license->nextCheck
+            && $license->isValid
         ) {
             return true;
         }
         // Call
         $license->request['domain'] = $_SERVER['SERVER_NAME'];
         $response = $client->call('license_key_validate', $license);
-        if (isset($response->error)
+        if ($response
+            && isset($response->error)
             && $response->error === false
         ) {
             $license->data = (array)$response->data;
             $license->touch();
             $setRequest((string)$license);
             return true;
+        } else if (($response === null || $response === '')
+            && $license->url
+            && isset($license->data['allow_offline'])
+            && isset($license->data['offline_interval'])
+            && isset($license->data['offline_value'])
+            && $license->data['allow_offline'] === true
+        ) {
+            if (!$license->isOffline) {
+                $license->enableOffline();
+                $setRequest((string)$license);
+                return true;
+            } else if ($license->isOfflineValid) {
+                return true;
+            }
         }
         return false;
     }

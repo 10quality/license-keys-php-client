@@ -122,7 +122,7 @@ class LicenseRequest
                 if (isset($this->settings['frequency']))
                     return $this->settings['frequency'];
                 break;
-            case 'next_check':
+            case 'nextCheck':
                 if (isset($this->settings['next_check']))
                     return $this->settings['next_check'];
                 break;
@@ -130,7 +130,16 @@ class LicenseRequest
                 return $this->request;
             case 'data':
                 return $this->data;
-            case 'is_valid':
+            case 'isOffline':
+                $value = isset($this->settings['offline']);
+                break;
+            case 'isOfflineValid':
+                $value = $this->isOffline
+                    && ($this->settings['offline'] === true
+                        || time() < $this->settings['offline']
+                    );
+                break;
+            case 'isValid':
                 $value = false;
                 if (isset($this->settings['frequency'])
                     && !empty($this->settings['frequency'])
@@ -176,9 +185,13 @@ class LicenseRequest
     /**
      * Touches request settings to update next check.
      * @since 1.0.0
+     *
+     * @param bool $disableOffline Disables online mode.
      */
-    public function touch()
+    public function touch($disableOffline = true)
     {
+        if ($disableOffline && isset($this->settings['offline']))
+            unset($this->settings['offline']);
         if (!isset($this->settings['frequency']))
             return;
         switch ($this->settings['frequency']) {
@@ -195,5 +208,16 @@ class LicenseRequest
                 $this->settings['next_check'] = strtotime($this->settings['frequency']);
                 break;
         }
+    }
+    /**
+     * Enables offline mode.
+     * @since 1.0.0
+     */
+    public function enableOffline()
+    {
+        $this->settings['offline'] = $this->data['offline_interval'] === 'unlimited'
+            ? true
+            : strtotime('+'.intval($this->data['offline_value']).' '.$this->data['offline_interval']);
+        $this->touch(false);
     }
 }

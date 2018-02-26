@@ -43,13 +43,14 @@ class RequestTest extends Api_TestCase
         // Assert properties
         $this->assertEquals('http://localhost/test', $license->url);
         $this->assertEquals(LicenseRequest::DAILY_FREQUENCY, $license->frequency);
-        $this->assertEquals(0, $license->next_check);
+        $this->assertEquals(0, $license->nextCheck);
         $this->assertInternalType('array', $license->data);
         $this->assertInternalType('array', $license->request);
         $this->assertEmpty($license->data);
         $this->assertNotEmpty($license->request);
-        $this->assertFalse($license->is_valid);
+        $this->assertFalse($license->isValid);
         $this->assertNull($license->settings);
+        $this->assertFalse($license->isOffline);
         // Assert request
         $this->assertArrayHasKey('store_code', $license->request);
         $this->assertArrayHasKey('sku', $license->request);
@@ -105,12 +106,12 @@ class RequestTest extends Api_TestCase
         // Assert properties
         $this->assertEquals('http://localhost/test', $license->url);
         $this->assertEquals(LicenseRequest::DAILY_FREQUENCY, $license->frequency);
-        $this->assertEquals(100, $license->next_check);
+        $this->assertEquals(100, $license->nextCheck);
         $this->assertInternalType('array', $license->data);
         $this->assertInternalType('array', $license->request);
         $this->assertNotEmpty($license->data);
         $this->assertNotEmpty($license->request);
-        $this->assertTrue($license->is_valid);
+        $this->assertTrue($license->isValid);
         $this->assertNull($license->settings);
         // Assert request
         $this->assertArrayHasKey('store_code', $license->request);
@@ -163,6 +164,24 @@ class RequestTest extends Api_TestCase
                 .'"has_expired":false,"status":"active","allow_offline":true,"offline_interval":"days","offline_value":1}}'
         );
         // Assert properties
-        $this->assertFalse($license->is_valid);
+        $this->assertFalse($license->isValid);
+    }
+    /**
+     * Tests offline mode.
+     * @since 1.0.0
+     */
+    public function testOffline()
+    {
+        // Prepare
+        $license = new LicenseRequest(
+            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":100},'
+                .'"request":[],'
+                .'"data":{"allow_offline":true,"offline_interval":"days","offline_value":1}}'
+        );
+        $license->enableOffline();
+        // Assert properties
+        $this->assertNotEquals(100, $license->nextCheck);
+        $this->assertTrue($license->isOffline);
+        $this->assertTrue($license->isOfflineValid);
     }
 }

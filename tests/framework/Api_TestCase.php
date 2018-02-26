@@ -45,7 +45,7 @@ class Api_TestCase extends PHPUnit_Framework_TestCase
             ->getMock();
     }
     /**
-     * Returns Client Mock.
+     * Returns LicenseRequest Mock.
      * @since 1.0.0
      *
      * @param object|LicenseRequest
@@ -57,7 +57,7 @@ class Api_TestCase extends PHPUnit_Framework_TestCase
             ->getMock();
     }
     /**
-     * Returns Client Mock.
+     * Returns LicenseRequest Mock.
      * @since 1.0.0
      *
      * @param object|LicenseRequest
@@ -67,6 +67,26 @@ class Api_TestCase extends PHPUnit_Framework_TestCase
         $mock = $this->getMockBuilder(LicenseRequest::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $mock->expects($this->once())
+            ->method('touch');
+        $mock->expects($this->once())
+            ->method('__toString')
+            ->willReturn($string);
+        return $mock;
+    }
+    /**
+     * Returns LicenseRequest Mock.
+     * @since 1.0.0
+     *
+     * @param object|LicenseRequest
+     */
+    public function getOfflineLicenseRequestMock($string)
+    {
+        $mock = $this->getMockBuilder(LicenseRequest::class)
+            ->setConstructorArgs([$string])
+            ->getMock();
+        $mock->expects($this->once())
+            ->method('enableOffline');
         $mock->expects($this->once())
             ->method('touch');
         $mock->expects($this->once())
