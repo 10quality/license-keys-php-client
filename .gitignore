@@ -1,0 +1,6 @@
+# Dependencies
+/vendor
+
+# Auto generated
+.tmp
+composer.lock

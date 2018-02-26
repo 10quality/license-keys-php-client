@@ -1,0 +1,28 @@
+{
+    "name": "10quality/license-keys-php-client",
+    "description": "PHP client for WooCommerce License Keys wordpress plugin.",
+    "license": "MIT",
+    "keywords": ["php","wordpress","api","license keys"],
+    "authors": [
+        {
+            "name": "Ale Mostajo",
+            "email": "amostajo@gmail.com"
+        },
+        {
+            "name": "10 Quality",
+            "email": "info@10quality.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.4.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "LicenseKeys\\Utility\\": "src"
+        }
+    },
+    "minimum-stability": "dev"
+}
