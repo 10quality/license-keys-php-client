@@ -107,6 +107,7 @@ class Api
      * Deactivates a license key.
      * Returns call response.
      * @since 1.0.0
+     * @since 1.0.1 Removes license on activation_id errors as well.
      *
      * @param Client  $client     Client to use for api calls.
      * @param Closure $getRequest Callable that returns a LicenseRequest.
@@ -125,10 +126,18 @@ class Api
         // Call
         $license->request['domain'] = $_SERVER['SERVER_NAME'];
         $response = $client->call('license_key_deactivate', $license);
-        if (isset($response->error)
-            && $response->error === false
-        ) {
-            $setRequest(null);
+        // Remove license
+        if (isset($response->error)) {
+            if ($response->error === false) {
+                $setRequest(null);
+            } else if (isset($response->errors)) {
+                foreach ($response->errors as $key => $message) {
+                    if ($key === 'activation_id') {
+                        $setRequest(null);
+                        break;
+                    }
+                }
+            }
         }
         return $response;
     }
