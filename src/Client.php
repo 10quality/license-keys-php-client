@@ -9,7 +9,7 @@ use Closure;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.0
+ * @version 1.0.2
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -49,6 +49,7 @@ class Client
      * Executes CURL call.
      * Returns API response.
      * @since 1.0.0
+     * @since 1.0.2 Checks https.
      *
      * @param string         $endPoint API endpoint to call.
      * @param LicenseRequest $license  License request.
@@ -59,7 +60,7 @@ class Client
     public function call($endPoint, LicenseRequest $license, $method = 'POST')
     {
         // Begin
-        $this->setCurl();
+        $this->setCurl(preg_match('/https\:/', $license->url));
         // Make call
         curl_setopt(
             $this->curl,
@@ -90,6 +91,9 @@ class Client
                 ));     
                 break;
         }
+        if (curl_errno($this->curl)) { 
+           print curl_error($this->curl); 
+        } 
         // Get response
         $this->response = curl_exec($this->curl);
         curl_close($this->curl);
@@ -102,7 +106,7 @@ class Client
      * @see http://us3.php.net/manual/en/book.curl.php
      * @see https://gist.github.com/salsalabs/e24c2466496860975e8a
      */
-    private function setCurl()
+    private function setCurl($is_https = false)
     {
         // Init
         $this->curl = curl_init();
@@ -116,5 +120,17 @@ class Client
         curl_setopt($this->curl, CURLOPT_USERAGENT,
             'Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.7.12) Gecko/20050915 Firefox/1.0.7'
         );
+        if ($is_https)
+            $this->setSSL();
+    }
+    /**
+     * Sets SSL curl properties when requesting an https url.
+     * @since 1.0.2
+     */
+    private function setSSL()
+    {
+        curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, 1); 
     }
 }

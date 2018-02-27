@@ -7,7 +7,7 @@ use LicenseKeys\Utility\LicenseRequest;
  * Extends PHPUnit TestCase to provide mocks with expected responses.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.0
+ * @version 1.0.2
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -45,16 +45,38 @@ class Api_TestCase extends PHPUnit_Framework_TestCase
             ->getMock();
     }
     /**
+     * Returns Client Mock with a expected JSON result.
+     * @since 1.0.2
+     *
+     * @param string $response Expected json response.
+     * @param bool   $once     Indicates if it is expected call to run once or more times.
+     *
+     * @param object|Client
+     */
+    public function getClientHttpsMock($once = true)
+    {
+        $mock = $this->getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $mock->expects($once ? $this->once() : $this->any())
+            ->method('setSSL');
+        return $mock;
+    }
+    /**
      * Returns LicenseRequest Mock.
      * @since 1.0.0
      *
      * @param object|LicenseRequest
      */
-    public function getLicenseRequestMock()
+    public function getLicenseRequestMock($string = false)
     {
-        return $this->getMockBuilder(LicenseRequest::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        return !is_string($string)
+            ? $this->getMockBuilder(LicenseRequest::class)
+                ->disableOriginalConstructor()
+                ->getMock()
+            : $this->getMockBuilder(LicenseRequest::class)
+                ->setConstructorArgs([$string])
+                ->getMock();
     }
     /**
      * Returns LicenseRequest Mock.

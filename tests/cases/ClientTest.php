@@ -6,7 +6,7 @@ use LicenseKeys\Utility\Client;
  * Tests Client class.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.0
+ * @version 1.0.2
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -45,6 +45,21 @@ class ClientTest extends Api_TestCase
         // Prepare
         $client = new Client();
         $response = $client->call('test.php', $this->getLicenseRequestMock());
+        // Assert
+        $this->assertNull($response);
+    }
+    /**
+     * Tests ssl configuration.
+     * @since 1.0.2
+     */
+    public function testSSL()
+    {
+        // Prepare
+        $client = $this->getClientHttpsMock('');
+        $response = $client->call(
+            'test.php',
+            $this->getLicenseRequestMock('{"settings":{"url":"https://test.com/"},"request":[],"data":[]}')
+        );
         // Assert
         $this->assertNull($response);
     }
