@@ -10,7 +10,7 @@ use Closure;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.0
+ * @version 1.0.3
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -51,16 +51,18 @@ class Api
      * Validates a license key.
      * Returns flag indicating if license key is valid.
      * @since 1.0.0
+     * @since 1.0.3 Force parameter added.
      *
      * @param Client  $client     Client to use for api calls.
      * @param Closure $getRequest Callable that returns a LicenseRequest.
      * @param Closure $setRequest Callable that sets (updates) a LicenseRequest casted as string.
+     * @param bool    $force      Flag that forces validation against the server.
      *
      * @throws Exception when LicenseRequest is not present.
      *
      * @return bool
      */
-    public static function validate(Client $client, Closure $getRequest, Closure $setRequest)
+    public static function validate(Client $client, Closure $getRequest, Closure $setRequest, $force = false)
     {
         // Prepare
         $license = $getRequest();
@@ -70,7 +72,8 @@ class Api
         if ($license->data['has_expired'])
             return false;
         // Validate cached license data
-        if (time() < $license->nextCheck
+        if ( ! $force 
+            && time() < $license->nextCheck
             && $license->isValid
         ) {
             return true;
