@@ -52,6 +52,7 @@ class Api
      * Returns flag indicating if license key is valid.
      * @since 1.0.0
      * @since 1.0.3 Force parameter added.
+     * @since 1.0.4 Checks if license key is empty.
      *
      * @param Client  $client     Client to use for api calls.
      * @param Closure $getRequest Callable that returns a LicenseRequest.
@@ -68,6 +69,10 @@ class Api
         $license = $getRequest();
         if (!is_a($license, LicenseRequest::class))
             throw new Exception('Closure must return an object instance of LicenseRequest.');
+        // Check license data
+        if ($license->isEmpty || $license->data['has_expired']) {
+            return false;
+        }
         // No need to check if license already expired.
         if ($license->data['has_expired'])
             return false;

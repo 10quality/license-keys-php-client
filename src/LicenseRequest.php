@@ -6,7 +6,7 @@ namespace LicenseKeys\Utility;
  * License Key API request.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.0
+ * @version 1.0.4
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -105,6 +105,7 @@ class LicenseRequest
     /**
      * Returns selected properties.
      * @since 1.0.0
+     * @since 1.0.4 Added isEmpty.
      *
      * @param string $property Property to return.
      *
@@ -149,6 +150,9 @@ class LicenseRequest
                 ) {
                     $value = $this->data['expire'] === null || time() < $this->data['expire'];
                 }
+                break;
+            case 'isEmpty':
+                $value = empty($this->data);
                 break;
         }
         return $value;
