@@ -16,7 +16,7 @@ License Keys API client used to activate, validate and deactivate your license k
 * [License](#license)
 
 ## Requirements
-* PHP >= 5.4
+* PHP >= 5.4 (For PHP >= 7.1 see [main branch](https://github.com/10quality/license-keys-php-client))
 
 ## Install
 

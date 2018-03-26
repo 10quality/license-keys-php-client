@@ -10,7 +10,7 @@ use Closure;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.3
+ * @version php5-1.0.0
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -20,19 +20,20 @@ class Api
      * Activates a license key.
      * Returns call response.
      * @since 1.0.0
+     * @since php5-1.0.0 Callables instead of closures.
      *
-     * @param Client  $client     Client to use for api calls.
-     * @param Closure $getRequest Callable that returns a LicenseRequest.
-     * @param Closure $setRequest Callable that sets a LicenseRequest casted as string.
+     * @param Client   $client      Client to use for api calls.
+     * @param callable $getCallable Callable that returns a LicenseRequest.
+     * @param callable $setCallable Callable that sets a LicenseRequest casted as string.
      *
      * @throws Exception when LicenseRequest is not present.
      *
      * @return object|stdClass
      */
-    public static function activate(Client $client, Closure $getRequest, Closure $setRequest)
+    public static function activate(Client $client, $getCallable, $setCallable)
     {
         // Prepare
-        $license = $getRequest();
+        $license = call_user_func_array($getCallable, []);
         if (!is_a($license, LicenseRequest::class))
             throw new Exception('Closure must return an object instance of LicenseRequest.');
         // Call
@@ -43,7 +44,7 @@ class Api
         ) {
             $license->data = (array)$response->data;
             $license->touch();
-            $setRequest((string)$license);
+            call_user_func_array($setCallable, [(string)$license]);
         }
         return $response;
     }
@@ -53,20 +54,21 @@ class Api
      * @since 1.0.0
      * @since 1.0.3 Force parameter added.
      * @since 1.0.4 Checks if license key is empty.
+     * @since php5-1.0.0 Callables instead of closures.
      *
-     * @param Client  $client     Client to use for api calls.
-     * @param Closure $getRequest Callable that returns a LicenseRequest.
-     * @param Closure $setRequest Callable that sets (updates) a LicenseRequest casted as string.
-     * @param bool    $force      Flag that forces validation against the server.
+     * @param Client   $client      Client to use for api calls.
+     * @param callable $getCallable Callable that returns a LicenseRequest.
+     * @param callable $setCallable Callable that sets a LicenseRequest casted as string.
+     * @param bool     $force       Flag that forces validation against the server.
      *
      * @throws Exception when LicenseRequest is not present.
      *
      * @return bool
      */
-    public static function validate(Client $client, Closure $getRequest, Closure $setRequest, $force = false)
+    public static function validate(Client $client, $getCallable, $setCallable, $force = false)
     {
         // Prepare
-        $license = $getRequest();
+        $license = call_user_func_array($getCallable, []);
         if (!is_a($license, LicenseRequest::class))
             throw new Exception('Closure must return an object instance of LicenseRequest.');
         // Check license data
@@ -92,7 +94,7 @@ class Api
         ) {
             $license->data = (array)$response->data;
             $license->touch();
-            $setRequest((string)$license);
+            call_user_func_array($setCallable, [(string)$license]);
             return true;
         } else if (($response === null || $response === '')
             && $license->url
@@ -103,7 +105,7 @@ class Api
         ) {
             if (!$license->isOffline) {
                 $license->enableOffline();
-                $setRequest((string)$license);
+                call_user_func_array($setCallable, [(string)$license]);
                 return true;
             } else if ($license->isOfflineValid) {
                 return true;
@@ -116,19 +118,20 @@ class Api
      * Returns call response.
      * @since 1.0.0
      * @since 1.0.1 Removes license on activation_id errors as well.
+     * @since php5-1.0.0 Callables instead of closures.
      *
-     * @param Client  $client     Client to use for api calls.
-     * @param Closure $getRequest Callable that returns a LicenseRequest.
-     * @param Closure $setRequest Callable that updates a LicenseRequest casted as string.
+     * @param Client   $client      Client to use for api calls.
+     * @param callable $getCallable Callable that returns a LicenseRequest.
+     * @param callable $setCallable Callable that sets a LicenseRequest casted as string.
      *
      * @throws Exception when LicenseRequest is not present.
      *
      * @return object|stdClass
      */
-    public static function deactivate(Client $client, Closure $getRequest, Closure $setRequest)
+    public static function deactivate(Client $client, $getCallable, $setCallable)
     {
         // Prepare
-        $license = $getRequest();
+        $license = call_user_func_array($getCallable, []);
         if (!is_a($license, LicenseRequest::class))
             throw new Exception('Closure must return an object instance of LicenseRequest.');
         // Call
@@ -137,11 +140,11 @@ class Api
         // Remove license
         if (isset($response->error)) {
             if ($response->error === false) {
-                $setRequest(null);
+                call_user_func_array($setCallable, [null]);
             } else if (isset($response->errors)) {
                 foreach ($response->errors as $key => $message) {
                     if ($key === 'activation_id') {
-                        $setRequest(null);
+                        call_user_func_array($setCallable, [null]);
                         break;
                     }
                 }
