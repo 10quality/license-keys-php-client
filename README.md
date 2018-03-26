@@ -24,7 +24,7 @@ License Keys API client used to activate, validate and deactivate your license k
 
 Run command:
 ```bash
-composer require 10quality/license-keys-php-client
+composer require 10quality/license-keys-php-client:dev-php5
 ```
 
 ### Without composer
