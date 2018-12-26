@@ -34,7 +34,7 @@ class Api
     {
         // Prepare
         $license = call_user_func_array($getCallable, []);
-        if (!is_a($license, LicenseRequest::class))
+        if (!is_a($license, 'LicenseKeys\Utility\LicenseRequest'))
             throw new Exception('Closure must return an object instance of LicenseRequest.');
         // Call
         $license->request['domain'] = $_SERVER['SERVER_NAME'];
@@ -69,7 +69,7 @@ class Api
     {
         // Prepare
         $license = call_user_func_array($getCallable, []);
-        if (!is_a($license, LicenseRequest::class))
+        if (!is_a($license, 'LicenseKeys\Utility\LicenseRequest'))
             throw new Exception('Closure must return an object instance of LicenseRequest.');
         // Check license data
         if ($license->isEmpty || $license->data['has_expired']) {
@@ -132,7 +132,7 @@ class Api
     {
         // Prepare
         $license = call_user_func_array($getCallable, []);
-        if (!is_a($license, LicenseRequest::class))
+        if (!is_a($license, 'LicenseKeys\Utility\LicenseRequest'))
             throw new Exception('Closure must return an object instance of LicenseRequest.');
         // Call
         $license->request['domain'] = $_SERVER['SERVER_NAME'];
