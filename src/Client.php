@@ -9,8 +9,8 @@ use Closure;
  * Curl client.
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
- * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.3
+ * @author Alejandro Mostajo <info@10quality.com>
+ * @version php5-1.0.1
  * @package LicenseKeys\Utility
  * @license MIT
  */

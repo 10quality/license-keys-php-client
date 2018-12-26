@@ -3,14 +3,13 @@
 namespace LicenseKeys\Utility;
 
 use Exception;
-use Closure;
 
 /**
  * License Keys's API wrapper.
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version php5-1.0.0
+ * @version php5-1.0.1
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -21,6 +20,7 @@ class Api
      * Returns call response.
      * @since 1.0.0
      * @since php5-1.0.0 Callables instead of closures.
+     * @since php5-1.0.1 Class calling.
      *
      * @param Client   $client      Client to use for api calls.
      * @param callable $getCallable Callable that returns a LicenseRequest.
@@ -55,6 +55,7 @@ class Api
      * @since 1.0.3 Force parameter added.
      * @since 1.0.4 Checks if license key is empty.
      * @since php5-1.0.0 Callables instead of closures.
+     * @since php5-1.0.1 Class calling.
      *
      * @param Client   $client      Client to use for api calls.
      * @param callable $getCallable Callable that returns a LicenseRequest.
@@ -119,6 +120,7 @@ class Api
      * @since 1.0.0
      * @since 1.0.1 Removes license on activation_id errors as well.
      * @since php5-1.0.0 Callables instead of closures.
+     * @since php5-1.0.1 Class calling.
      *
      * @param Client   $client      Client to use for api calls.
      * @param callable $getCallable Callable that returns a LicenseRequest.
