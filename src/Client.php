@@ -9,7 +9,7 @@ use Closure;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.2
+ * @version 1.0.3
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -91,12 +91,12 @@ class Client
                 ));     
                 break;
         }
-        if (curl_errno($this->curl)) { 
-           print curl_error($this->curl); 
-        } 
         // Get response
         $this->response = curl_exec($this->curl);
         curl_close($this->curl);
+        if (curl_errno($this->curl)) {
+            print curl_error($this->curl); 
+        }
         return json_decode($this->response);
     }
     /**
