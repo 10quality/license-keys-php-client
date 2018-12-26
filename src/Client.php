@@ -10,7 +10,7 @@ use Exception;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.2
+ * @version 1.0.3
  * @package LicenseKeys\Utility
  * @license MIT
  */
