@@ -34,8 +34,8 @@ class Api
     {
         // Prepare
         $license = call_user_func_array($getCallable, []);
-        if (!is_a($license, 'LicenseKeys\Utility\LicenseRequest'))
-            throw new Exception('Closure must return an object instance of LicenseRequest.');
+        if (!is_a($license, 'LicenseKeys\\Utility\\LicenseRequest'))
+            throw new Exception('Callable must return an object instance of LicenseRequest.');
         // Call
         $license->request['domain'] = $_SERVER['SERVER_NAME'];
         $response = $client->call('license_key_activate', $license);
@@ -69,8 +69,8 @@ class Api
     {
         // Prepare
         $license = call_user_func_array($getCallable, []);
-        if (!is_a($license, 'LicenseKeys\Utility\LicenseRequest'))
-            throw new Exception('Closure must return an object instance of LicenseRequest.');
+        if (!is_a($license, 'LicenseKeys\\Utility\\LicenseRequest'))
+            throw new Exception('Callable must return an object instance of LicenseRequest.');
         // Check license data
         if ($license->isEmpty || $license->data['has_expired']) {
             return false;
@@ -132,8 +132,8 @@ class Api
     {
         // Prepare
         $license = call_user_func_array($getCallable, []);
-        if (!is_a($license, 'LicenseKeys\Utility\LicenseRequest'))
-            throw new Exception('Closure must return an object instance of LicenseRequest.');
+        if (!is_a($license, 'LicenseKeys\\Utility\\LicenseRequest'))
+            throw new Exception('Callable must return an object instance of LicenseRequest.');
         // Call
         $license->request['domain'] = $_SERVER['SERVER_NAME'];
         $response = $client->call('license_key_deactivate', $license);
