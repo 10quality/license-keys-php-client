@@ -10,7 +10,7 @@ use Exception;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.3
+ * @version 1.0.5
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -51,6 +51,7 @@ class Client
      * Returns API response.
      * @since 1.0.0
      * @since 1.0.2 Checks https.
+     * @since 1.0.5 Fixes error handling.
      *
      * @param string         $endPoint API endpoint to call.
      * @param LicenseRequest $license  License request.
