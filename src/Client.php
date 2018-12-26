@@ -2,6 +2,7 @@
 
 namespace LicenseKeys\Utility;
 
+use Exception;
 use Closure;
 
 /**
@@ -93,10 +94,12 @@ class Client
         }
         // Get response
         $this->response = curl_exec($this->curl);
-        curl_close($this->curl);
         if (curl_errno($this->curl)) {
-            print curl_error($this->curl); 
+            $error = curl_error($this->curl);
+            curl_close($this->curl);
+            throw new Exception($error);
         }
+        curl_close($this->curl);
         return json_decode($this->response);
     }
     /**
