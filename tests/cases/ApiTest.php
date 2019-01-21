@@ -188,4 +188,24 @@ class ApiTest extends Api_TestCase
         $this->assertInternalType('string', $echoed);
         $this->assertEquals('', $echoed);
     }
+    /**
+     * Tests validate with connection retry.
+     * @since 1.0.6
+     */
+    public function testValidateWithDefaultRetries()
+    {
+        // Prepare
+        $license = '{"settings":{"retries":0},"request":[],"data":{"activation_id":1,"expire":897}}';
+        // Exec
+        $valid = Api::validate(
+            $this->getClientMock(0),
+            function() use($license) { return $this->getRetriedLicenseRequestMock($license); },
+            function() {},
+            false,
+            true
+        );
+        // Assert
+        $this->assertInternalType('bool', $valid);
+        $this->assertTrue($valid);
+    }
 }

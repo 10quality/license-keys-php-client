@@ -9,7 +9,7 @@ use Exception;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version php5-1.0.1
+ * @version php5-1.0.2
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -56,22 +56,29 @@ class Api
      * @since 1.0.4 Checks if license key is empty.
      * @since php5-1.0.0 Callables instead of closures.
      * @since php5-1.0.1 Class calling.
+     * @since php5-1.0.2 Connection retries.
      *
-     * @param Client   $client      Client to use for api calls.
-     * @param callable $getCallable Callable that returns a LicenseRequest.
-     * @param callable $setCallable Callable that sets a LicenseRequest casted as string.
-     * @param bool     $force       Flag that forces validation against the server.
+     * @param Client   $client         Client to use for api calls.
+     * @param callable $getCallable    Callable that returns a LicenseRequest.
+     * @param callable $setCallable    Callable that sets a LicenseRequest casted as string.
+     * @param bool     $force          Flag that forces validation against the server.
+     * @param bool     $allowRetry     Allow to connection retries.
+     * @param int      $retryAttempts  Retry attempts.
+     * @param tring    $retryFrequency Retry frequency.
      *
      * @throws Exception when LicenseRequest is not present.
      *
      * @return bool
      */
-    public static function validate(Client $client, $getCallable, $setCallable, $force = false)
-    {
+    public static function validate(
+        Client $client, $getCallable, $setCallable, $force = false,
+        $allowRetry = false, $retryAttempts = 2, $retryFrequency = '+1 hour'
+    ) {
         // Prepare
         $license = call_user_func_array($getCallable, []);
         if (!is_a($license, 'LicenseKeys\\Utility\\LicenseRequest'))
             throw new Exception('Callable must return an object instance of LicenseRequest.');
+        $license->updateVersion();
         // Check license data
         if ($license->isEmpty || $license->data['has_expired']) {
             return false;
@@ -91,13 +98,13 @@ class Api
         $response = $client->call('license_key_validate', $license);
         if ($response
             && isset($response->error)
-            && $response->error === false
         ) {
-            $license->data = (array)$response->data;
+            if ($license->data)
+                $license->data = (array)$response->data;
             $license->touch();
             call_user_func_array($setCallable, [(string)$license]);
-            return true;
-        } else if (($response === null || $response === '')
+            return $response->error === false;
+        } else if (empty($response)
             && $license->url
             && isset($license->data['allow_offline'])
             && isset($license->data['offline_interval'])
@@ -111,6 +118,13 @@ class Api
             } else if ($license->isOfflineValid) {
                 return true;
             }
+        } else if (empty($response)
+            && $allowRetry
+            && $license->retries < $retryAttempts
+        ) {
+            $license->addRetryAttempt($retryFrequency);
+            call_user_func_array($setCallable, [(string)$license]);
+            return true;
         }
         return false;
     }
@@ -121,6 +135,7 @@ class Api
      * @since 1.0.1 Removes license on activation_id errors as well.
      * @since php5-1.0.0 Callables instead of closures.
      * @since php5-1.0.1 Class calling.
+     * @since php5-1.0.2 Versioning support.
      *
      * @param Client   $client      Client to use for api calls.
      * @param callable $getCallable Callable that returns a LicenseRequest.
@@ -136,6 +151,7 @@ class Api
         $license = call_user_func_array($getCallable, []);
         if (!is_a($license, 'LicenseKeys\\Utility\\LicenseRequest'))
             throw new Exception('Callable must return an object instance of LicenseRequest.');
+        $license->updateVersion();
         // Call
         $license->request['domain'] = $_SERVER['SERVER_NAME'];
         $response = $client->call('license_key_deactivate', $license);

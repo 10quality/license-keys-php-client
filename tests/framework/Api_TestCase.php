@@ -116,4 +116,22 @@ class Api_TestCase extends PHPUnit_Framework_TestCase
             ->willReturn($string);
         return $mock;
     }
+    /**
+     * Returns LicenseRequest Mock.
+     * @since 1.0.0
+     *
+     * @param object|LicenseRequest
+     */
+    public function getRetriedLicenseRequestMock($string, $once = true)
+    {
+        $mock = $this->getMockBuilder(LicenseRequest::class)
+            ->setConstructorArgs([$string])
+            ->getMock();
+        $mock->expects($this->once())
+            ->method('addRetryAttempt');
+        $mock->expects($this->once())
+            ->method('__toString')
+            ->willReturn($string);
+        return $mock;
+    }
 }
