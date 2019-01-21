@@ -6,7 +6,7 @@ namespace LicenseKeys\Utility;
  * License Key API request.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.4
+ * @version 1.0.6
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -76,12 +76,13 @@ class LicenseRequest
     /**
      * Creates basic license request.
      * @since 1.0.0
+     * @since 1.0.6 Supports retries.
      *
-     * @param string $url         Base API url.
-     * @param string $store_code  Store code.
-     * @param string $sku         Product SKU.
-     * @param string $license_key Customer license key.
-     * @param string $frequency   API validate call frequency.
+     * @param string $url            Base API url.
+     * @param string $store_code     Store code.
+     * @param string $sku            Product SKU.
+     * @param string $license_key    Customer license key.
+     * @param string $frequency      API validate call frequency.
      *
      * @return object|LicenseRequest
      */
@@ -89,14 +90,16 @@ class LicenseRequest
     {
         $license = [
             'settings'  => [
-                            'url'           => $url,
-                            'frequency'     => $frequency,
-                            'next_check'    => 0,
+                            'url'               => $url,
+                            'frequency'         => $frequency,
+                            'next_check'        => 0,
+                            'version'           => '1.0.6',
+                            'retries'           => 0,
                         ],
             'request'   => [
-                            'store_code'    => $store_code,
-                            'sku'           => $sku,
-                            'license_key'   => $license_key,
+                            'store_code'        => $store_code,
+                            'sku'               => $sku,
+                            'license_key'       => $license_key,
                         ],
             'data'      => []
         ];
@@ -106,6 +109,7 @@ class LicenseRequest
      * Returns selected properties.
      * @since 1.0.0
      * @since 1.0.4 Added isEmpty.
+     * @since 1.0.6 Retries support.
      *
      * @param string $property Property to return.
      *
@@ -154,6 +158,14 @@ class LicenseRequest
             case 'isEmpty':
                 $value = empty($this->data);
                 break;
+            case 'version':
+                if (isset($this->settings['version']))
+                    return $this->settings['version'];
+                break;
+            case 'retries':
+                if (isset($this->settings['retries']))
+                    return $this->settings['retries'];
+                break;
         }
         return $value;
     }
@@ -189,11 +201,13 @@ class LicenseRequest
     /**
      * Touches request settings to update next check.
      * @since 1.0.0
+     * @since 1.0.6 Resets retries.
      *
      * @param bool $disableOffline Disables online mode.
      */
     public function touch($disableOffline = true)
     {
+        $this->settings['retries'] = 0;
         if ($disableOffline && isset($this->settings['offline']))
             unset($this->settings['offline']);
         if (!isset($this->settings['frequency']))
@@ -223,5 +237,29 @@ class LicenseRequest
             ? true
             : strtotime('+'.intval($this->data['offline_value']).' '.$this->data['offline_interval']);
         $this->touch(false);
+    }
+    /**
+     * Updates license to add a new retry attempt and updates next check frequency.
+     * @since 1.0.6
+     * 
+     * @param string $next_check_rule String used in strtotime to indicate when will the next retry be.
+     */
+    public function addRetryAttempt($nextCheckRule)
+    {
+        $this->settings['retries']++;
+        $this->settings['next_check'] = strtotime($nextCheckRule);
+    }
+    /**
+     * Updates license structure to meet a structural version.
+     * @since 1.0.6
+     */
+    public function updateVersion()
+    {
+        switch ($this->version) {
+            case null:
+                $this->settings['version'] = '1.0.6';
+                $this->settings['retries'] = 0;
+                break;
+        }
     }
 }
