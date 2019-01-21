@@ -143,7 +143,7 @@ class RequestTest extends Api_TestCase
         );
         // Assert properties
         $this->assertEquals(
-            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":0},'
+            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":0,"version":"1.0.6","retries":0},'
                 .'"request":{"store_code":"STORECODE4","sku":"SKU1","license_key":"aKey-777"},'
                 .'"data":[]}',
             (string)$license

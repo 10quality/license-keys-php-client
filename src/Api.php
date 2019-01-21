@@ -69,7 +69,7 @@ class Api
      */
     public static function validate(
         Client $client, Closure $getRequest, Closure $setRequest, $force = false,
-        $allowRetry = true, $retryAttempts = 4, $retryFrequency = '+1 hour'
+        $allowRetry = false, $retryAttempts = 2, $retryFrequency = '+1 hour'
     ) {
         // Prepare
         $license = $getRequest();
@@ -96,7 +96,8 @@ class Api
         if ($response
             && isset($response->error)
         ) {
-            $license->data = (array)$response->data;
+            if ($license->data)
+                $license->data = (array)$response->data;
             $license->touch();
             $setRequest((string)$license);
             return $response->error === false;

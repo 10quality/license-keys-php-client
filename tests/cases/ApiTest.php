@@ -1,6 +1,7 @@
 <?php
 
 use LicenseKeys\Utility\Api;
+use LicenseKeys\Utility\LicenseRequest;
 
 /**
  * Tests Api class.
@@ -52,12 +53,12 @@ class ApiTest extends Api_TestCase
     {
         // Prepare
         $response = Api::activate(
-            $this->getClientMock(''),
+            $this->getClientMock(0),
             function() { return $this->getLicenseRequestMock(); },
             function() {}
         );
         // Assert
-        $this->assertNull($response);
+        $this->assertTrue(empty($response));
     }
     /**
      * Tests activate result with error response.
@@ -105,9 +106,10 @@ class ApiTest extends Api_TestCase
     {
         // Prepare
         $valid = Api::validate(
-            $this->getClientMock(''),
+            $this->getClientMock(0),
             function() { return $this->getLicenseRequestMock(); },
-            function() {}
+            function() {},
+            false
         );
         // Assert
         $this->assertInternalType('bool', $valid);
@@ -160,12 +162,12 @@ class ApiTest extends Api_TestCase
     {
         // Prepare
         $response = Api::deactivate(
-            $this->getClientMock(''),
+            $this->getClientMock(0),
             function() { return $this->getLicenseRequestMock(); },
             function() {}
         );
         // Assert
-        $this->assertNull($response);
+        $this->assertTrue(empty($response));
     }
     /**
      * Tests deactivate.
@@ -187,5 +189,25 @@ class ApiTest extends Api_TestCase
         // Assert set closure
         $this->assertInternalType('string', $echoed);
         $this->assertEquals('', $echoed);
+    }
+    /**
+     * Tests validate with connection retry.
+     * @since 1.0.6
+     */
+    public function testValidateWithDefaultRetries()
+    {
+        // Prepare
+        $license = '{"settings":{"retries":0},"request":[],"data":{"activation_id":1,"expire":897}}';
+        // Exec
+        $valid = Api::validate(
+            $this->getClientMock(0),
+            function() use($license) { return $this->getRetriedLicenseRequestMock($license); },
+            function() {},
+            false,
+            true
+        );
+        // Assert
+        $this->assertInternalType('bool', $valid);
+        $this->assertTrue($valid);
     }
 }
