@@ -10,7 +10,7 @@ use Closure;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.3
+ * @version 1.0.6
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -53,22 +53,29 @@ class Api
      * @since 1.0.0
      * @since 1.0.3 Force parameter added.
      * @since 1.0.4 Checks if license key is empty.
+     * @since 1.0.6 Connection retries.
      *
-     * @param Client  $client     Client to use for api calls.
-     * @param Closure $getRequest Callable that returns a LicenseRequest.
-     * @param Closure $setRequest Callable that sets (updates) a LicenseRequest casted as string.
-     * @param bool    $force      Flag that forces validation against the server.
+     * @param Client  $client         Client to use for api calls.
+     * @param Closure $getRequest     Callable that returns a LicenseRequest.
+     * @param Closure $setRequest     Callable that sets (updates) a LicenseRequest casted as string.
+     * @param bool    $force          Flag that forces validation against the server.
+     * @param bool    $allowRetry     Allow to connection retries.
+     * @param int     $retryAttempts  Retry attempts.
+     * @param string  $retryFrequency Retry frequency.
      *
      * @throws Exception when LicenseRequest is not present.
      *
      * @return bool
      */
-    public static function validate(Client $client, Closure $getRequest, Closure $setRequest, $force = false)
-    {
+    public static function validate(
+        Client $client, Closure $getRequest, Closure $setRequest, $force = false,
+        $allowRetry = true, $retryAttempts = 4, $retryFrequency = '+1 hour'
+    ) {
         // Prepare
         $license = $getRequest();
         if (!is_a($license, LicenseRequest::class))
             throw new Exception('Closure must return an object instance of LicenseRequest.');
+        $license->updateVersion();
         // Check license data
         if ($license->isEmpty || $license->data['has_expired']) {
             return false;
@@ -88,13 +95,12 @@ class Api
         $response = $client->call('license_key_validate', $license);
         if ($response
             && isset($response->error)
-            && $response->error === false
         ) {
             $license->data = (array)$response->data;
             $license->touch();
             $setRequest((string)$license);
-            return true;
-        } else if (($response === null || $response === '')
+            return $response->error === false;
+        } else if (empty($response)
             && $license->url
             && isset($license->data['allow_offline'])
             && isset($license->data['offline_interval'])
@@ -108,6 +114,13 @@ class Api
             } else if ($license->isOfflineValid) {
                 return true;
             }
+        } else if (empty($response)
+            && $allowRetry
+            && $license->retries < $retryAttempts
+        ) {
+            $license->addRetryAttempt($retryFrequency);
+            $setRequest((string)$license);
+            return true;
         }
         return false;
     }
@@ -116,6 +129,7 @@ class Api
      * Returns call response.
      * @since 1.0.0
      * @since 1.0.1 Removes license on activation_id errors as well.
+     * @since 1.0.6 Versioning support.
      *
      * @param Client  $client     Client to use for api calls.
      * @param Closure $getRequest Callable that returns a LicenseRequest.
@@ -131,6 +145,7 @@ class Api
         $license = $getRequest();
         if (!is_a($license, LicenseRequest::class))
             throw new Exception('Closure must return an object instance of LicenseRequest.');
+        $license->updateVersion();
         // Call
         $license->request['domain'] = $_SERVER['SERVER_NAME'];
         $response = $client->call('license_key_deactivate', $license);
