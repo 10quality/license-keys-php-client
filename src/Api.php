@@ -10,7 +10,7 @@ use Closure;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.6
+ * @version 1.0.7
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -36,7 +36,7 @@ class Api
         if (!is_a($license, LicenseRequest::class))
             throw new Exception('Closure must return an object instance of LicenseRequest.');
         // Call
-        $license->request['domain'] = $_SERVER['SERVER_NAME'];
+        $license->request['domain'] = isset( $_SERVER['SERVER_NAME'] ) ? $_SERVER['SERVER_NAME'] : 'Unknown';
         $response = $client->call('license_key_activate', $license);
         if (isset($response->error)
             && $response->error === false
@@ -91,8 +91,14 @@ class Api
             return true;
         }
         // Call
-        $license->request['domain'] = $_SERVER['SERVER_NAME'];
-        $response = $client->call('license_key_validate', $license);
+        $license->request['domain'] = isset( $_SERVER['SERVER_NAME'] ) ? $_SERVER['SERVER_NAME'] : 'Unknown';
+        $response = null;
+        try {
+            $response = $client->call('license_key_validate', $license);
+        } catch (Exception $e) {
+            if (strpos($e->getMessage(), 'Could not resolve host') === false)
+                throw $e;
+        }
         if ($response
             && isset($response->error)
         ) {
@@ -148,7 +154,7 @@ class Api
             throw new Exception('Closure must return an object instance of LicenseRequest.');
         $license->updateVersion();
         // Call
-        $license->request['domain'] = $_SERVER['SERVER_NAME'];
+        $license->request['domain'] = isset( $_SERVER['SERVER_NAME'] ) ? $_SERVER['SERVER_NAME'] : 'Unknown';
         $response = $client->call('license_key_deactivate', $license);
         // Remove license
         if (isset($response->error)) {
