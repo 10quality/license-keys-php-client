@@ -9,7 +9,7 @@ use Exception;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version php5-1.0.2
+ * @version php5-1.0.3
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -21,6 +21,7 @@ class Api
      * @since 1.0.0
      * @since php5-1.0.0 Callables instead of closures.
      * @since php5-1.0.1 Class calling.
+     * @since php5-1.0.3 Bug fixes.
      *
      * @param Client   $client      Client to use for api calls.
      * @param callable $getCallable Callable that returns a LicenseRequest.
@@ -37,7 +38,7 @@ class Api
         if (!is_a($license, 'LicenseKeys\\Utility\\LicenseRequest'))
             throw new Exception('Callable must return an object instance of LicenseRequest.');
         // Call
-        $license->request['domain'] = $_SERVER['SERVER_NAME'];
+        $license->request['domain'] = isset( $_SERVER['SERVER_NAME'] ) ? $_SERVER['SERVER_NAME'] : 'Unknown';
         $response = $client->call('license_key_activate', $license);
         if (isset($response->error)
             && $response->error === false
@@ -57,6 +58,7 @@ class Api
      * @since php5-1.0.0 Callables instead of closures.
      * @since php5-1.0.1 Class calling.
      * @since php5-1.0.2 Connection retries.
+     * @since php5-1.0.3 Bug fixes.
      *
      * @param Client   $client         Client to use for api calls.
      * @param callable $getCallable    Callable that returns a LicenseRequest.
@@ -64,7 +66,7 @@ class Api
      * @param bool     $force          Flag that forces validation against the server.
      * @param bool     $allowRetry     Allow to connection retries.
      * @param int      $retryAttempts  Retry attempts.
-     * @param tring    $retryFrequency Retry frequency.
+     * @param string   $retryFrequency Retry frequency.
      *
      * @throws Exception when LicenseRequest is not present.
      *
@@ -94,12 +96,18 @@ class Api
             return true;
         }
         // Call
-        $license->request['domain'] = $_SERVER['SERVER_NAME'];
-        $response = $client->call('license_key_validate', $license);
+        $license->request['domain'] = isset( $_SERVER['SERVER_NAME'] ) ? $_SERVER['SERVER_NAME'] : 'Unknown';
+        $response = null;
+        try {
+            $response = $client->call('license_key_validate', $license);   
+        } catch (Exception $e) {
+            if (strpos($e->getMessage(), 'Could not resolve host') === false)
+                throw $e;
+        }
         if ($response
             && isset($response->error)
         ) {
-            if ($license->data)
+            if (isset($response->data))
                 $license->data = (array)$response->data;
             $license->touch();
             call_user_func_array($setCallable, [(string)$license]);
@@ -136,6 +144,7 @@ class Api
      * @since php5-1.0.0 Callables instead of closures.
      * @since php5-1.0.1 Class calling.
      * @since php5-1.0.2 Versioning support.
+     * @since php5-1.0.3 Bug fixes.
      *
      * @param Client   $client      Client to use for api calls.
      * @param callable $getCallable Callable that returns a LicenseRequest.
@@ -153,7 +162,7 @@ class Api
             throw new Exception('Callable must return an object instance of LicenseRequest.');
         $license->updateVersion();
         // Call
-        $license->request['domain'] = $_SERVER['SERVER_NAME'];
+        $license->request['domain'] = isset( $_SERVER['SERVER_NAME'] ) ? $_SERVER['SERVER_NAME'] : 'Unknown';
         $response = $client->call('license_key_deactivate', $license);
         // Remove license
         if (isset($response->error)) {

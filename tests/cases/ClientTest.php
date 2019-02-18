@@ -1,7 +1,6 @@
 <?php
 
 use LicenseKeys\Utility\Client;
-
 /**
  * Tests Client class.
  *

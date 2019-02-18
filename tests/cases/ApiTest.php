@@ -1,6 +1,8 @@
 <?php
 
 use LicenseKeys\Utility\Api;
+use LicenseKeys\Utility\Client;
+use LicenseKeys\Utility\LicenseRequest;
 
 /**
  * Tests Api class.
@@ -207,5 +209,52 @@ class ApiTest extends Api_TestCase
         // Assert
         $this->assertInternalType('bool', $valid);
         $this->assertTrue($valid);
+    }
+    /**
+     * Tests retry on unreachable source.
+     * @since 1.0.0
+     */
+    public function testUnknowSource()
+    {
+        // Prepare
+        $license = new LicenseRequest(
+            '{"settings":{"url":"http:\/\/www.thissiteshouldnotexist--1900200.test","frequency":"daily","retries":0},'
+                .'"request":[],'
+                .'"data":{"has_expired":false}}'
+        );
+        // Call
+        $valid = Api::validate(
+            Client::instance(),
+            function() use($license) { return $license; },
+            function() {},
+            true,
+            true
+        );
+        // Assert
+        $this->assertTrue($valid);
+    }
+    /**
+     * Tests failed retry on unreachable source.
+     * @since 1.0.0
+     */
+    public function testUnknowSourceMaxRetries()
+    {
+        // Prepare
+        $license = new LicenseRequest(
+            '{"settings":{"url":"http:\/\/www.thissiteshouldnotexist--1900200.test","frequency":"daily","retries":1,"version":"1.0.6"},'
+                .'"request":[],'
+                .'"data":{"has_expired":false}}'
+        );
+        // Call
+        $valid = Api::validate(
+            Client::instance(),
+            function() use($license) { return $license; },
+            function() {},
+            true,
+            true,
+            1
+        );
+        // Assert
+        $this->assertFalse($valid);
     }
 }
