@@ -54,6 +54,7 @@ class Api
      * @since 1.0.3 Force parameter added.
      * @since 1.0.4 Checks if license key is empty.
      * @since 1.0.6 Connection retries.
+     * @since 1.0.7 Bug fixes.
      *
      * @param Client  $client         Client to use for api calls.
      * @param Closure $getRequest     Callable that returns a LicenseRequest.
@@ -102,7 +103,7 @@ class Api
         if ($response
             && isset($response->error)
         ) {
-            if ($license->data)
+            if (isset($response->data))
                 $license->data = (array)$response->data;
             $license->touch();
             $setRequest((string)$license);
