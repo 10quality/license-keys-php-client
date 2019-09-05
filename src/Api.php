@@ -10,7 +10,7 @@ use Closure;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.8
+ * @version 1.0.9
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -174,7 +174,7 @@ class Api
     }
     /**
      * Validates a license key (NO SERVER VALIDATION).
-     * @since 1.0.8
+     * @since 1.0.9
      *
      * @param Closure $getRequest     Callable that returns a LicenseRequest.
      *

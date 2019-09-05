@@ -8,7 +8,7 @@ use LicenseKeys\Utility\LicenseRequest;
  * Tests Api class.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.8
+ * @version 1.0.9
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -260,7 +260,7 @@ class ApiTest extends Api_TestCase
     }
     /**
      * Tests soft validate.
-     * @since 1.0.8
+     * @since 1.0.9
      */
     public function testSoftValidateHasExpired()
     {
@@ -278,7 +278,7 @@ class ApiTest extends Api_TestCase
     }
     /**
      * Tests soft validate.
-     * @since 1.0.8
+     * @since 1.0.9
      */
     public function testSoftValidateMissingFrequency()
     {
@@ -296,7 +296,7 @@ class ApiTest extends Api_TestCase
     }
     /**
      * Tests soft validate.
-     * @since 1.0.8
+     * @since 1.0.9
      */
     public function testSoftValidateExpiredTime()
     {
@@ -314,7 +314,7 @@ class ApiTest extends Api_TestCase
     }
     /**
      * Tests soft validate.
-     * @since 1.0.8
+     * @since 1.0.9
      */
     public function testSoftValidateValidExpiry()
     {
@@ -333,7 +333,7 @@ class ApiTest extends Api_TestCase
     }
     /**
      * Tests soft validate.
-     * @since 1.0.8
+     * @since 1.0.9
      */
     public function testSoftValidateValidLifetime()
     {
@@ -351,7 +351,7 @@ class ApiTest extends Api_TestCase
     }
     /**
      * Tests exception on softValidate method.
-     * @since 1.0.8
+     * @since 1.0.9
      * @expectedException Exception
      */
     public function testSoftValidateException()
