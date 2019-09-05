@@ -8,7 +8,7 @@ use LicenseKeys\Utility\LicenseRequest;
  * Tests Api class.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.0
+ * @version php5-1.0.4
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -256,5 +256,110 @@ class ApiTest extends Api_TestCase
         );
         // Assert
         $this->assertFalse($valid);
+    }
+    /**
+     * Tests soft validate.
+     * @since php5-1.0.4
+     */
+    public function testSoftValidateHasExpired()
+    {
+        // Prepare
+        $license = new LicenseRequest(
+            '{"settings":[],"request":[],"data":{"activation_id":1,"expire":897,"has_expired":true}}'
+        );
+        // Exec
+        $valid = Api::softValidate(
+            function() use($license) { return $license; }
+        );
+        // Assert
+        $this->assertInternalType('bool', $valid);
+        $this->assertFalse($valid);
+    }
+    /**
+     * Tests soft validate.
+     * @since php5-1.0.4
+     */
+    public function testSoftValidateMissingFrequency()
+    {
+        // Prepare
+        $license = new LicenseRequest(
+            '{"settings":[],"request":[],"data":{"activation_id":1,"expire":897,"has_expired":false}}'
+        );
+        // Exec
+        $valid = Api::softValidate(
+            function() use($license) { return $license; }
+        );
+        // Assert
+        $this->assertInternalType('bool', $valid);
+        $this->assertFalse($valid);
+    }
+    /**
+     * Tests soft validate.
+     * @since php5-1.0.4
+     */
+    public function testSoftValidateExpiredTime()
+    {
+        // Prepare
+        $license = new LicenseRequest(
+            '{"settings":{"frequency":"daily"},"request":[],"data":{"activation_id":1,"expire":897,"has_expired":false}}'
+        );
+        // Exec
+        $valid = Api::softValidate(
+            function() use($license) { return $license; }
+        );
+        // Assert
+        $this->assertInternalType('bool', $valid);
+        $this->assertFalse($valid);
+    }
+    /**
+     * Tests soft validate.
+     * @since php5-1.0.4
+     */
+    public function testSoftValidateValidExpiry()
+    {
+        // Prepare
+        $time = time() + 10000;
+        $license = new LicenseRequest(
+            '{"settings":{"frequency":"daily"},"request":[],"data":{"activation_id":1,"expire":' . $time . ',"has_expired":false}}'
+        );
+        // Exec
+        $valid = Api::softValidate(
+            function() use($license) { return $license; }
+        );
+        // Assert
+        $this->assertInternalType('bool', $valid);
+        $this->assertTrue($valid);
+    }
+    /**
+     * Tests soft validate.
+     * @since php5-1.0.4
+     */
+    public function testSoftValidateValidLifetime()
+    {
+        // Prepare
+        $license = new LicenseRequest(
+            '{"settings":{"frequency":"daily"},"request":[],"data":{"activation_id":1,"expire":null,"has_expired":false}}'
+        );
+        // Exec
+        $valid = Api::softValidate(
+            function() use($license) { return $license; }
+        );
+        // Assert
+        $this->assertInternalType('bool', $valid);
+        $this->assertTrue($valid);
+    }
+    /**
+     * Tests exception on softValidate method.
+     * @since php5-1.0.4
+     * @expectedException Exception
+     */
+    public function testSoftValidateException()
+    {
+        // Prepare
+        $response = Api::softValidate(
+            function() {}
+        );
+        // Assert
+        $this->assertFail('Closure must return an object instance of LicenseRequest.');
     }
 }

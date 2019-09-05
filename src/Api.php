@@ -9,7 +9,7 @@ use Exception;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version php5-1.0.3
+ * @version php5-1.0.4
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -178,5 +178,29 @@ class Api
             }
         }
         return $response;
+    }
+    /**
+     * Validates a license key (NO SERVER VALIDATION).
+     * @since php5-1.0.4
+     *
+     * @param callable $getCallable Callable that returns a LicenseRequest.
+     *
+     * @throws Exception when LicenseRequest is not present.
+     *
+     * @return bool
+     */
+    public static function softValidate($getCallable)
+    {
+        // Prepare
+        $license = call_user_func_array($getCallable, []);
+        if (!is_a($license, LicenseRequest::class))
+            throw new Exception('Closure must return an object instance of LicenseRequest.');
+        $license->updateVersion();
+        // Check license data
+        if ($license->isEmpty || $license->data['has_expired']) {
+            return false;
+        }
+        // Validate cached license data
+        return $license->isValid;
     }
 }
