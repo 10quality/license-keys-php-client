@@ -10,7 +10,7 @@ use Closure;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.7
+ * @version 1.0.8
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -171,5 +171,29 @@ class Api
             }
         }
         return $response;
+    }
+    /**
+     * Validates a license key (NO SERVER VALIDATION).
+     * @since 1.0.8
+     *
+     * @param Closure $getRequest     Callable that returns a LicenseRequest.
+     *
+     * @throws Exception when LicenseRequest is not present.
+     *
+     * @return bool
+     */
+    public static function softValidate( Closure $getRequest )
+    {
+        // Prepare
+        $license = $getRequest();
+        if (!is_a($license, LicenseRequest::class))
+            throw new Exception('Closure must return an object instance of LicenseRequest.');
+        $license->updateVersion();
+        // Check license data
+        if ($license->isEmpty || $license->data['has_expired']) {
+            return false;
+        }
+        // Validate cached license data
+        return $license->isValid;
     }
 }
