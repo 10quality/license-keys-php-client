@@ -10,7 +10,7 @@ use Closure;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.9
+ * @version 1.0.10
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -176,13 +176,13 @@ class Api
      * Validates a license key (NO SERVER VALIDATION).
      * @since 1.0.9
      *
-     * @param Closure $getRequest     Callable that returns a LicenseRequest.
+     * @param Closure $getRequest Callable that returns a LicenseRequest.
      *
      * @throws Exception when LicenseRequest is not present.
      *
      * @return bool
      */
-    public static function softValidate( Closure $getRequest )
+    public static function softValidate(Closure $getRequest)
     {
         // Prepare
         $license = $getRequest();
@@ -195,5 +195,45 @@ class Api
         }
         // Validate cached license data
         return $license->isValid;
+    }
+    /**
+     * Returns validate endpoint's response.
+     * @since 1.0.10
+     *
+     * @param Client  $client     Client to use for api calls.
+     * @param Closure $getRequest Callable that returns a LicenseRequest.
+     * @param Closure $setRequest Callable that updates a LicenseRequest casted as string.
+     *
+     * @throws Exception when LicenseRequest is not present.
+     *
+     * @return object|stdClass
+     */
+    public static function check(Client $client, Closure $getRequest, Closure $setRequest)
+    {
+        // Prepare
+        $license = $getRequest();
+        if (!is_a($license, LicenseRequest::class))
+            throw new Exception('Closure must return an object instance of LicenseRequest.');
+        $license->updateVersion();
+        // Check license data
+        if ($license->isEmpty || $license->data['has_expired']) {
+            return false;
+        }
+        // Call
+        $license->request['domain'] = isset( $_SERVER['SERVER_NAME'] ) ? $_SERVER['SERVER_NAME'] : 'Unknown';
+        $response = null;
+        try {
+            $response = $client->call('license_key_validate', $license);
+        } catch (Exception $e) {
+            if (strpos($e->getMessage(), 'Could not resolve host') === false)
+                throw $e;
+        }
+        if ($response && isset($response->error)) {
+            if (isset($response->data))
+                $license->data = (array)$response->data;
+            $license->touch();
+            $setRequest((string)$license);
+        }
+        return $response;
     }
 }

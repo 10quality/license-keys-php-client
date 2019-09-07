@@ -8,7 +8,7 @@ use LicenseKeys\Utility\LicenseRequest;
  * Tests Api class.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.9
+ * @version 1.0.10
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -362,5 +362,77 @@ class ApiTest extends Api_TestCase
         );
         // Assert
         $this->assertFail('Closure must return an object instance of LicenseRequest.');
+    }
+    /**
+     * Tests exception on validate endpoint, check method.
+     * @since 1.0.10
+     * @expectedException Exception
+     */
+    public function testCheckException()
+    {
+        // Prepare
+        $response = Api::check(
+            $this->getSimpleClientMock(),
+            function() {},
+            function() {}
+        );
+        // Assert
+        $this->assertFail('Closure must return an object instance of LicenseRequest.');
+    }
+    /**
+     * Tests activate result with no response.
+     * @since 1.0.10
+     */
+    public function testCheckWithNoResponse()
+    {
+        // Prepare
+        $response = Api::check(
+            $this->getClientMock(0),
+            function() { return $this->getLicenseRequestMock(); },
+            function() {}
+        );
+        // Assert
+        $this->assertTrue(empty($response));
+    }
+    /**
+     * Tests validate result error response.
+     * @since 1.0.10
+     */
+    public function testCheckWithError()
+    {
+        // Prepare
+        $response = Api::check(
+            $this->getClientMock('{"error":true}'),
+            function() { return $this->getLicenseRequestMock(); },
+            function() {}
+        );
+        // Assert
+        $this->assertTrue($response->error);
+    }
+    /**
+     * Tests validate.
+     * @since 1.0.10
+     */
+    public function testCheck()
+    {
+        // Prepare
+        $license = '{"settings":[],"request":[],"data":{"activation_id":1,"expire":897}}';
+        // Execute
+        ob_start();
+        $response = Api::check(
+            $this->getClientMock('{"error":false,"data":{"activation_id":1,"expire":897}}'),
+            function() use(&$license) { return $this->getTouchedLicenseRequestMock($license); },
+            function($string) { echo $string; }
+        );
+        $echoed = ob_get_clean();
+        // Assert response
+        $this->assertInternalType('object', $response);
+        $this->assertFalse($response->error);
+        $this->assertInternalType('object', $response->data);
+        $this->assertEquals(1, $response->data->activation_id);
+        $this->assertEquals(897, $response->data->expire);
+        // Assert set closure
+        $this->assertInternalType('string', $echoed);
+        $this->assertEquals($license, $echoed);
     }
 }

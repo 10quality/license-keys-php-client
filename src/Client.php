@@ -2,7 +2,6 @@
 
 namespace LicenseKeys\Utility;
 
-use Closure;
 use Exception;
 
 /**
