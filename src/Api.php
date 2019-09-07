@@ -9,7 +9,7 @@ use Exception;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version php5-1.0.4
+ * @version php5-1.0.5
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -193,7 +193,7 @@ class Api
     {
         // Prepare
         $license = call_user_func_array($getCallable, []);
-        if (!is_a($license, LicenseRequest::class))
+        if (!is_a($license, 'LicenseKeys\\Utility\\LicenseRequest'))
             throw new Exception('Closure must return an object instance of LicenseRequest.');
         $license->updateVersion();
         // Check license data
@@ -202,5 +202,45 @@ class Api
         }
         // Validate cached license data
         return $license->isValid;
+    }
+    /**
+     * Returns validate endpoint's response.
+     * @since php5-1.0.5
+     *
+     * @param Client   $client      Client to use for api calls.
+     * @param callable $getCallable Callable that returns a LicenseRequest.
+     * @param callable $setCallable Callable that sets a LicenseRequest casted as string.
+     *
+     * @throws Exception when LicenseRequest is not present.
+     *
+     * @return object|stdClass
+     */
+    public static function check(Client $client, $getCallable, $setCallable)
+    {
+        // Prepare
+        $license = call_user_func_array($getCallable, []);
+        if (!is_a($license, 'LicenseKeys\\Utility\\LicenseRequest'))
+            throw new Exception('Closure must return an object instance of LicenseRequest.');
+        $license->updateVersion();
+        // Check license data
+        if ($license->isEmpty || $license->data['has_expired']) {
+            return false;
+        }
+        // Call
+        $license->request['domain'] = isset( $_SERVER['SERVER_NAME'] ) ? $_SERVER['SERVER_NAME'] : 'Unknown';
+        $response = null;
+        try {
+            $response = $client->call('license_key_validate', $license);
+        } catch (Exception $e) {
+            if (strpos($e->getMessage(), 'Could not resolve host') === false)
+                throw $e;
+        }
+        if ($response && isset($response->error)) {
+            if (isset($response->data))
+                $license->data = (array)$response->data;
+            $license->touch();
+            call_user_func_array($setCallable, [(string)$license]);
+        }
+        return $response;
     }
 }

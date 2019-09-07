@@ -3,7 +3,6 @@
 namespace LicenseKeys\Utility;
 
 use Exception;
-use Closure;
 
 /**
  * Curl client.
