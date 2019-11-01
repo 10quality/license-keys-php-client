@@ -2,11 +2,13 @@
 
 namespace LicenseKeys\Utility;
 
+use Exception;
+
 /**
  * License Key API request.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.6
+ * @version 1.1.0
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -49,8 +51,15 @@ class LicenseRequest
      */
     protected $data = [];
     /**
+     * License key custom data.
+     * @since 1.1.0
+     * @var array
+     */
+    protected $meta = [];
+    /**
      * Default constructor.
      * @since 1.0.0
+     * @since 1.1.0 Custom data support.
      *
      * @param string $license License data encoded as JSON.
      */
@@ -63,6 +72,8 @@ class LicenseRequest
             $this->request = (array)$license->request;
         if (isset($license->data))
             $this->data = (array)$license->data;
+        if (isset($license->meta))
+            $this->meta = (array)$license->meta;
         // Check for activation_id
         if (!isset($this->request['activation_id'])
             && isset($this->data['activation_id'])
@@ -89,19 +100,20 @@ class LicenseRequest
     public static function create($url, $store_code, $sku, $license_key, $frequency = self::DAILY_FREQUENCY)
     {
         $license = [
-            'settings'  => [
-                            'url'               => $url,
-                            'frequency'         => $frequency,
-                            'next_check'        => 0,
-                            'version'           => '1.0.6',
-                            'retries'           => 0,
-                        ],
-            'request'   => [
-                            'store_code'        => $store_code,
-                            'sku'               => $sku,
-                            'license_key'       => $license_key,
-                        ],
-            'data'      => []
+            'settings'      => [
+                                'url'               => $url,
+                                'frequency'         => $frequency,
+                                'next_check'        => 0,
+                                'version'           => '1.1.0',
+                                'retries'           => 0,
+                            ],
+            'request'       => [
+                                'store_code'        => $store_code,
+                                'sku'               => $sku,
+                                'license_key'       => $license_key,
+                            ],
+            'data'          => [],
+            'meta'          => [],
         ];
         return new self(json_encode($license));
     }
@@ -195,7 +207,8 @@ class LicenseRequest
         return json_encode([
             'settings'  => $this->settings,
             'request'   => $this->request,
-            'data'      => $this->data
+            'data'      => $this->data,
+            'meta'      => $this->meta,
         ]);
     }
     /**
@@ -260,6 +273,42 @@ class LicenseRequest
                 $this->settings['version'] = '1.0.6';
                 $this->settings['retries'] = 0;
                 break;
+            case '1.0.6':
+                $this->settings['version'] = '1.1.0';
+                $this->meta = [];
+                break;
         }
+    }
+    /**
+     * Adds custom key and value to meta data.
+     * @since 1.1.0
+     * 
+     * @throws Exception
+     * 
+     * @param string $key   Custom meta key.
+     * @param mixed  $value Custom meta value.
+     */
+    public function add($key, $value = null)
+    {
+        if (!is_string($key))
+            throw new Exception('Meta key must be a string.');
+        if (!is_array($this->meta))
+            $this->meta = [];
+        $this->meta[$key] = is_object($value) ? (array)$value : $value;
+    }
+    /**
+     * Returns custom value associated to a meta key.
+     * @since 1.1.0
+     * 
+     * @param string $key     Custom meta key.
+     * @param mixed  $default Default value if key not found.
+     * 
+     * @return mixed
+     */
+    public function get($key, $default = null)
+    {
+        if (!is_string($key))
+            throw new Exception('Meta key must be a string.');
+        return array_key_exists($key, $this->meta) ? $this->meta[$key] : $default;
     }
 }
