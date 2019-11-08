@@ -10,7 +10,7 @@ use Closure;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.10
+ * @version 1.1.0
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -51,10 +51,6 @@ class Api
      * Validates a license key.
      * Returns flag indicating if license key is valid.
      * @since 1.0.0
-     * @since 1.0.3 Force parameter added.
-     * @since 1.0.4 Checks if license key is empty.
-     * @since 1.0.6 Connection retries.
-     * @since 1.0.7 Bug fixes.
      *
      * @param Client  $client         Client to use for api calls.
      * @param Closure $getRequest     Callable that returns a LicenseRequest.
@@ -105,6 +101,8 @@ class Api
         ) {
             if (isset($response->data))
                 $license->data = (array)$response->data;
+            if ($response->error && isset($response->errors))
+                $license->data = ['errors' => $response->errors];
             $license->touch();
             $setRequest((string)$license);
             return $response->error === false;
@@ -136,8 +134,6 @@ class Api
      * Deactivates a license key.
      * Returns call response.
      * @since 1.0.0
-     * @since 1.0.1 Removes license on activation_id errors as well.
-     * @since 1.0.6 Versioning support.
      *
      * @param Client  $client     Client to use for api calls.
      * @param Closure $getRequest Callable that returns a LicenseRequest.
@@ -231,6 +227,8 @@ class Api
         if ($response && isset($response->error)) {
             if (isset($response->data))
                 $license->data = (array)$response->data;
+            if ($response->error && isset($response->errors))
+                $license->data = ['errors' => $response->errors];
             $license->touch();
             $setRequest((string)$license);
         }

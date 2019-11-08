@@ -8,7 +8,7 @@ use LicenseKeys\Utility\LicenseRequest;
  * Tests Api class.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.10
+ * @version 1.1.0
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -434,5 +434,27 @@ class ApiTest extends Api_TestCase
         // Assert set closure
         $this->assertInternalType('string', $echoed);
         $this->assertEquals($license, $echoed);
+    }
+    /**
+     * Tests method.
+     * @since 1.1.0
+     */
+    public function testCheckError()
+    {
+        // Prepare
+        $license = '{"settings":[],"request":[],"data":{"activation_id":1,"expire":897}}';
+        // Execute
+        ob_start();
+        $response = Api::check(
+            $this->getClientMock('{"error":true,"errors":{"activation_id":"Error"}}'),
+            function() use(&$license) { return $this->getTouchedLicenseRequestMock($license); },
+            function($string) { echo $string; }
+        );
+        $echoed = ob_get_clean();
+        // Assert response
+        $this->assertInternalType('object', $response);
+        $this->assertTrue($response->error);
+        $this->assertInternalType('object', $response->errors);
+        $this->assertEquals('Error', $response->errors->activation_id);
     }
 }
