@@ -143,9 +143,9 @@ class RequestTest extends Api_TestCase
         );
         // Assert properties
         $this->assertEquals(
-            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":0,"version":"1.0.6","retries":0},'
+            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":0,"version":"1.1.0","retries":0},'
                 .'"request":{"store_code":"STORECODE4","sku":"SKU1","license_key":"aKey-777"},'
-                .'"data":[]}',
+                .'"data":[],"meta":[]}',
             (string)$license
         );
     }
@@ -183,5 +183,115 @@ class RequestTest extends Api_TestCase
         $this->assertNotEquals(100, $license->nextCheck);
         $this->assertTrue($license->isOffline);
         $this->assertTrue($license->isOfflineValid);
+    }
+    /**
+     * Tests add meta data.
+     * @since 1.1.0
+     */
+    public function testAddGetMeta()
+    {
+        // Prepare
+        $license = new LicenseRequest(
+            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":100},'
+                .'"request":[],'
+                .'"data":{"allow_offline":true,"offline_interval":"days","offline_value":1},'
+                .'"meta":[]}'
+        );
+        $obj = new stdClass;
+        $obj->a = 10;
+        $obj->b = 20;
+        // Execute
+        $license->add('int', 1);
+        $license->add('string', 'test');
+        $license->add('float', 0.9);
+        $license->add('array', [1,2]);
+        $license->add('obj', $obj);
+        // Assert properties
+        $this->assertInternalType('int', $license->get('int'));
+        $this->assertEquals(1, $license->get('int'));
+        $this->assertInternalType('string', $license->get('string'));
+        $this->assertEquals('test', $license->get('string'));
+        $this->assertInternalType('float', $license->get('float'));
+        $this->assertEquals(0.9, $license->get('float'));
+        $this->assertInternalType('array', $license->get('array'));
+        $this->assertEquals([1,2], $license->get('array'));
+        $this->assertInternalType('array', $license->get('obj'));
+        $this->assertEquals(['a' => 10, 'b' => 20], $license->get('obj'));
+    }
+    /**
+     * Tests add meta data.
+     * @since 1.1.0
+     */
+    public function testGetDefaultMeta()
+    {
+        // Prepare
+        $license = new LicenseRequest(
+            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":100},'
+                .'"request":[],'
+                .'"data":{"allow_offline":true,"offline_interval":"days","offline_value":1},'
+                .'"meta":[]}'
+        );
+        // Execute
+        $license->add('a', 1);
+        // Assert properties
+        $this->assertNull($license->get('b'));
+        $this->assertInternalType('float', $license->get('b', 0.9));
+        $this->assertEquals(0.9, $license->get('b', 0.9));
+    }
+    /**
+     * Tests wrong key data type.
+     * @since 1.1.0
+     * @expectedException Exception
+     */
+    public function testAddMetaException()
+    {// Prepare
+        $license = new LicenseRequest(
+            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":100},'
+                .'"request":[],'
+                .'"data":{"allow_offline":true,"offline_interval":"days","offline_value":1},'
+                .'"meta":[]}'
+        );
+        // Execute
+        $license->add(1);
+    }
+    /**
+     * Tests wrong key data type.
+     * @since 1.1.0
+     * @expectedException Exception
+     */
+    public function testGetMetaException()
+    {// Prepare
+        $license = new LicenseRequest(
+            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":100},'
+                .'"request":[],'
+                .'"data":{"allow_offline":true,"offline_interval":"days","offline_value":1},'
+                .'"meta":[]}'
+        );
+        // Execute
+        $license->get(1);
+    }
+    /**
+     * Tests construct with a valid JSON license sample.
+     * @since 1.1.0
+     */
+    public function testMetaCasting()
+    {
+        // Prepare
+        $license = LicenseRequest::create(
+            'http://localhost/test',
+            'STORECODE4',
+            'SKU1',
+            'aKey-777'
+        );
+        // Execute
+        $license->add('a', 1);
+        $license->add('b', 'b');
+        // Assert properties
+        $this->assertEquals(
+            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":0,"version":"1.1.0","retries":0},'
+                .'"request":{"store_code":"STORECODE4","sku":"SKU1","license_key":"aKey-777"},'
+                .'"data":[],"meta":{"a":1,"b":"b"}}',
+            (string)$license
+        );
     }
 }

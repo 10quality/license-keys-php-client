@@ -109,6 +109,8 @@ class Api
         ) {
             if (isset($response->data))
                 $license->data = (array)$response->data;
+            if ($response->error && isset($response->errors))
+                $license->data = ['errors' => $response->errors];
             $license->touch();
             call_user_func_array($setCallable, [(string)$license]);
             return $response->error === false;
@@ -238,6 +240,8 @@ class Api
         if ($response && isset($response->error)) {
             if (isset($response->data))
                 $license->data = (array)$response->data;
+            if ($response->error && isset($response->errors))
+                $license->data = ['errors' => $response->errors];
             $license->touch();
             call_user_func_array($setCallable, [(string)$license]);
         }
