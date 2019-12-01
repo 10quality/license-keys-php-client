@@ -39,8 +39,6 @@ class ClientTest extends Api_TestCase
     /**
      * Tests simple empty call.
      * @since 1.0.0
-     *
-     * @expectedException Exception
      */
     public function testEmptyCall()
     {

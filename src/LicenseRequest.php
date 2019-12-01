@@ -7,7 +7,7 @@ use Exception;
  * License Key API request.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version php5-1.1.0
+ * @version php5-1.2.0
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -85,25 +85,26 @@ class LicenseRequest
     /**
      * Creates basic license request.
      * @since 1.0.0
-     * @since 1.0.6 Supports retries.
      *
      * @param string $url            Base API url.
      * @param string $store_code     Store code.
      * @param string $sku            Product SKU.
      * @param string $license_key    Customer license key.
      * @param string $frequency      API validate call frequency.
+     * @param string $handler        API handler.
      *
      * @return object|LicenseRequest
      */
-    public static function create($url, $store_code, $sku, $license_key, $frequency = self::DAILY_FREQUENCY)
+    public static function create($url, $store_code, $sku, $license_key, $frequency = self::DAILY_FREQUENCY, $handler = null)
     {
         $license = [
             'settings'  => [
                             'url'               => $url,
                             'frequency'         => $frequency,
                             'next_check'        => 0,
-                            'version'           => '1.1.0',
+                            'version'           => '1.2.0',
                             'retries'           => 0,
+                            'handler'           => $handler,
                         ],
             'request'   => [
                             'store_code'        => $store_code,
@@ -175,6 +176,10 @@ class LicenseRequest
             case 'retries':
                 if (isset($this->settings['retries']))
                     return $this->settings['retries'];
+                break;
+            case 'handler':
+                if (isset($this->settings['handler']))
+                    return $this->settings['handler'];
                 break;
         }
         return $value;
@@ -274,6 +279,10 @@ class LicenseRequest
             case '1.0.6':
                 $this->settings['version'] = '1.1.0';
                 $this->meta = [];
+                break;
+            case '1.1.0':
+                $this->settings['version'] = '1.2.0';
+                $this->settings['handler'] = null;
                 break;
         }
     }
