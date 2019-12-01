@@ -6,7 +6,7 @@ use LicenseKeys\Utility\LicenseRequest;
  * Tests RequestTest class.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.1.0
+ * @version 1.2.0
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -143,7 +143,7 @@ class RequestTest extends Api_TestCase
         );
         // Assert properties
         $this->assertEquals(
-            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":0,"version":"1.1.0","retries":0},'
+            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":0,"version":"1.2.0","retries":0,"handler":null},'
                 .'"request":{"store_code":"STORECODE4","sku":"SKU1","license_key":"aKey-777"},'
                 .'"data":[],"meta":[]}',
             (string)$license
@@ -288,10 +288,29 @@ class RequestTest extends Api_TestCase
         $license->add('b', 'b');
         // Assert properties
         $this->assertEquals(
-            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":0,"version":"1.1.0","retries":0},'
+            '{"settings":{"url":"http:\/\/localhost\/test","frequency":"daily","next_check":0,"version":"1.2.0","retries":0,"handler":null},'
                 .'"request":{"store_code":"STORECODE4","sku":"SKU1","license_key":"aKey-777"},'
                 .'"data":[],"meta":{"a":1,"b":"b"}}',
             (string)$license
         );
+    }
+    /**
+     * Tests static constructor.
+     * @since 1.2.0
+     */
+    public function testStaticConstructorWithHandler()
+    {
+        // Prepare
+        $license = LicenseRequest::create(
+            'http://localhost/test',
+            'STORECODE4',
+            'SKU1',
+            'aKey-777',
+            null,
+            'wp_rest'
+        );
+        // Assert properties
+        $this->assertInternalType('string', $license->handler);
+        $this->assertEquals('wp_rest', $license->handler);
     }
 }

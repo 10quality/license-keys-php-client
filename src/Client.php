@@ -9,7 +9,7 @@ use Exception;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.5
+ * @version 1.2.0
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -35,6 +35,13 @@ class Client
      */
     protected $response;
     /**
+     * Last response got from API.
+     * RAW response
+     * @since 1.2.0
+     * @var string
+     */
+    protected $events = [];
+    /**
      * Static constructor.
      * @since 1.0.0
      */
@@ -46,29 +53,44 @@ class Client
         return static::$instance;
     }
     /**
+     * Adds an event handler.
+     * @since 1.2.0
+     * 
+     * @param string   $event
+     * @param callable $callable
+     */
+    public function on($event, $callable)
+    {
+        if (!is_array($this->events))
+            $this->events = [];
+        if (is_callable($callable))
+            $this->events[$event] = $callable;
+        return $this;
+    }
+    /**
      * Executes CURL call.
      * Returns API response.
      * @since 1.0.0
-     * @since 1.0.2 Checks https.
-     * @since 1.0.5 Fixes error handling.
      *
-     * @param string         $endPoint API endpoint to call.
+     * @param string         $endpoint API endpoint to call.
      * @param LicenseRequest $license  License request.
      * @param string         $method   Request method.
      *
      * @return mixed|object|null
      */
-    public function call($endPoint, LicenseRequest $license, $method = 'POST')
+    public function call($endpoint, LicenseRequest $license, $method = 'POST')
     {
+        $microtime = microtime(true);
+        $this->trigger('start', [$microtime]);
         // Begin
         $this->setCurl(preg_match('/https\:/', $license->url));
+        $this->resolveEndpoint( $endpoint, $license );
         // Make call
-        curl_setopt(
-            $this->curl,
-            CURLOPT_URL,
-            $license->url.'?action='.$endPoint
-        );
+        $url = $license->url.$endpoint;
+        $this->trigger('endpoint', [$endpoint, $url]);
+        curl_setopt( $this->curl, CURLOPT_URL, $url);
         // Set method
+        $this->trigger('request', [$license->request]);
         switch ($method) {
             case 'GET':
                 curl_setopt($this->curl, CURLOPT_POST, 0);
@@ -97,10 +119,15 @@ class Client
         if (curl_errno($this->curl)) {
             $error = curl_error($this->curl);
             curl_close($this->curl);
-            throw new Exception($error);
+            if (!empty($error)) {
+                throw new Exception($error);
+            }
+        } else {
+            curl_close($this->curl);
         }
-        curl_close($this->curl);
-        return json_decode($this->response);
+        $this->trigger('response', [$this->response]);
+        $this->trigger('finish', [microtime(true), $microtime]);
+        return empty($this->response) ? null : json_decode($this->response);
     }
     /**
      * Sets curl property and its settings.
@@ -135,5 +162,35 @@ class Client
         curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, 1); 
+    }
+    /**
+     * Resolve endpoint based on handler setup.
+     * @since 1.2.0
+     * 
+     * @param string         &$endpoint
+     * @param LicenseRequest $license   License request.
+     */
+    private function resolveEndpoint(&$endpoint, LicenseRequest $license)
+    {
+        switch ($license->handler) {
+            case 'wp_rest':
+                $endpoint = '/wp-json/woo-license-keys/v1/'.str_replace('license_key_' , '', $endpoint);
+                break;
+            default:
+                $endpoint = '?action='.$endpoint;
+                break;
+        }
+    }
+    /**
+     * Triggers an event.
+     * @since 1.2.0
+     * 
+     * @param string $event
+     * @param array  $args
+     */
+    private function trigger($event, $args = [])
+    {
+        if (array_key_exists($event, $this->events))
+            call_user_func_array($this->events[$event], $args);
     }
 }
