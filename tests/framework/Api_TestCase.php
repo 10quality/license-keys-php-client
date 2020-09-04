@@ -2,6 +2,7 @@
 
 use LicenseKeys\Utility\Client;
 use LicenseKeys\Utility\LicenseRequest;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Extends PHPUnit TestCase to provide mocks with expected responses.
@@ -11,7 +12,7 @@ use LicenseKeys\Utility\LicenseRequest;
  * @package LicenseKeys\Utility
  * @license MIT
  */
-class Api_TestCase extends PHPUnit_Framework_TestCase
+class Api_TestCase extends TestCase
 {
     /**
      * Returns Client Mock with a expected JSON result.

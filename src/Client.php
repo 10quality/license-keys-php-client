@@ -9,7 +9,7 @@ use Exception;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com>
- * @version php5-1.2.0
+ * @version php5-1.2.1
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -42,6 +42,12 @@ class Client
      */
     protected $events = [];
     /**
+     * Sets request options.
+     * @since 1.2.1
+     * @var array
+     */
+    protected $options = [];
+    /**
      * Static constructor.
      * @since 1.0.0
      */
@@ -58,6 +64,8 @@ class Client
      * 
      * @param string   $event
      * @param callable $callable
+     *
+     * @return this
      */
     public function on($event, $callable)
     {
@@ -66,6 +74,31 @@ class Client
         if (is_callable($callable))
             $this->events[$event] = $callable;
         return $this;
+    }
+    /**
+     * Sets client options.
+     * @since 1.2.1
+     * 
+     * @param array $options
+     * @param callable $callable
+     *
+     * @return this
+     */
+    public function set($options)
+    {
+        if (is_array($options))
+            $this->options = $options;
+        return $this;
+    }
+    /**
+     * Returns client custom options.
+     * @since 1.2.1
+     * 
+     * @return array
+     */
+    public function getOptions()
+    {
+        return  $this->options;
     }
     /**
      * Executes CURL call.
@@ -144,12 +177,13 @@ class Client
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($this->curl, CURLOPT_TIMEOUT, isset($this->request->settings['timeout']) ? $this->request->settings['timeout'] : 100);
         // Set parameters to maintain cookies across sessions
-        curl_setopt($this->curl, CURLOPT_COOKIESESSION, TRUE);
-        curl_setopt($this->curl, CURLOPT_COOKIEFILE, '/tmp/cookies_file');
-        curl_setopt($this->curl, CURLOPT_COOKIEJAR, '/tmp/cookies_file');
-        curl_setopt($this->curl, CURLOPT_USERAGENT,
+        curl_setopt($this->curl, CURLOPT_COOKIESESSION, $this->getOption(CURLOPT_COOKIESESSION, TRUE));
+        curl_setopt($this->curl, CURLOPT_COOKIEFILE, $this->getOption(CURLOPT_COOKIEFILE, '/tmp/cookies_file'));
+        curl_setopt($this->curl, CURLOPT_COOKIEJAR, $this->getOption(CURLOPT_COOKIEJAR, '/tmp/cookies_file'));
+        curl_setopt($this->curl, CURLOPT_USERAGENT, $this->getOption(
+            CURLOPT_USERAGENT,
             'Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.7.12) Gecko/20050915 Firefox/1.0.7'
-        );
+        ));
         if ($is_https)
             $this->setSSL();
     }
@@ -161,7 +195,6 @@ class Client
     {
         curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, 1); 
     }
     /**
      * Resolve endpoint based on handler setup.
@@ -192,5 +225,18 @@ class Client
     {
         if (array_key_exists($event, $this->events))
             call_user_func_array($this->events[$event], $args);
+    }
+    /**
+     * Returs a set option value.
+     * @since 1.2.1
+     *
+     * @param string $option
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    private function getOption($option, $default = 0)
+    {
+        return array_key_exists($option, $this->options) ? $this->options[$option] : $default;
     }
 }
