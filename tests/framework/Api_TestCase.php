@@ -2,16 +2,17 @@
 
 use LicenseKeys\Utility\Client;
 use LicenseKeys\Utility\LicenseRequest;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Extends PHPUnit TestCase to provide mocks with expected responses.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.2
+ * @version 1.2.1
  * @package LicenseKeys\Utility
  * @license MIT
  */
-class Api_TestCase extends PHPUnit_Framework_TestCase
+class Api_TestCase extends TestCase
 {
     /**
      * Returns Client Mock with a expected JSON result.

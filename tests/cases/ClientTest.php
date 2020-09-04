@@ -6,7 +6,7 @@ use LicenseKeys\Utility\Client;
  * Tests Client class.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.2
+ * @version 1.2.1
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -62,5 +62,29 @@ class ClientTest extends Api_TestCase
         );
         // Assert
         $this->assertNull($response);
+    }
+    /**
+     * Tests setOption.
+     * @since 1.2.1
+     * @group curl
+     */
+    public function testSetOption()
+    {
+        // Prepare
+        $license = $this->getLicenseRequestMock('{"settings":{"url":"https://google.com/"},"request":[],"data":[]}');
+        // Execute
+        $response = Client::instance()
+            ->set([
+                CURLOPT_COOKIESESSION => false,
+                CURLOPT_COOKIEFILE => '/tmp/phpunit_files/',
+            ])
+            ->call('gmail', $license, 'GET');
+        $options = Client::instance()->getOptions();
+        // Assert
+        $this->assertArrayHasKey(CURLOPT_COOKIESESSION, $options);
+        $this->assertArrayHasKey(CURLOPT_COOKIEFILE, $options);
+        $this->assertArrayNotHasKey(CURLOPT_COOKIEJAR, $options);
+        $this->assertEquals(false, $options[CURLOPT_COOKIESESSION]);
+        $this->assertEquals('/tmp/phpunit_files/', $options[CURLOPT_COOKIEFILE]);
     }
 }
