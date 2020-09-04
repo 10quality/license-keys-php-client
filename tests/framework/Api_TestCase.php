@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
  * Extends PHPUnit TestCase to provide mocks with expected responses.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.0.2
+ * @version 1.2.1
  * @package LicenseKeys\Utility
  * @license MIT
  */

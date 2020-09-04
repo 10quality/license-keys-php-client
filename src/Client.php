@@ -98,7 +98,7 @@ class Client
      */
     public function getOptions()
     {
-        return  $this->options;
+        return $this->options;
     }
     /**
      * Executes CURL call.
