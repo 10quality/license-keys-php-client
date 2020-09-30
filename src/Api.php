@@ -236,7 +236,7 @@ class Api
     }
     /**
      * Returns token endpoint's response.
-     * @since 1.0.10
+     * @since 1.2.2
      *
      * @param Client  $client     Client to use for api calls.
      * @param Closure $getRequest Callable that returns a LicenseRequest.

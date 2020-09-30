@@ -8,7 +8,7 @@ use Exception;
  * License Key API request.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.2.0
+ * @version 1.2.2
  * @package LicenseKeys\Utility
  * @license MIT
  */
