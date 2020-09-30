@@ -9,7 +9,7 @@ use Exception;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.2.1
+ * @version 1.2.2
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -48,6 +48,12 @@ class Client
      */
     protected $options = [];
     /**
+     * Sets request headers.
+     * @since 1.2.2
+     * @var array
+     */
+    protected $headers = [];
+    /**
      * Static constructor.
      * @since 1.0.0
      */
@@ -73,6 +79,27 @@ class Client
             $this->events = [];
         if (is_callable($callable))
             $this->events[$event] = $callable;
+        return $this;
+    }
+    /**
+     * Adds a header.
+     * @since 1.2.2
+     * 
+     * @param string|null $key   Null will clear headers.
+     * @param string      $value
+     *
+     * @return this
+     */
+    public function header($key, $value = null)
+    {
+        if ($key === null){
+            $this->headers = [];
+            return $this;
+        }
+        if (!is_array($this->headers))
+            $this->headers = [];
+        if ($value !== null)
+            $this->headers[$key] = $value;
         return $this;
     }
     /**
@@ -105,28 +132,30 @@ class Client
      * Returns API response.
      * @since 1.0.0
      *
-     * @param string         $endpoint API endpoint to call.
-     * @param LicenseRequest $license  License request.
-     * @param string         $method   Request method.
+     * @param string         $endpoint            API endpoint to call.
+     * @param LicenseRequest $license             License request.
+     * @param string         $method              Request method.
+     * @param bool           $bypassAuthorization Bypass authorization header.
      *
      * @return mixed|object|null
      */
-    public function call($endpoint, LicenseRequest $license, $method = 'POST')
+    public function call($endpoint, LicenseRequest $license, $method = 'POST', $bypassAuthorization = false)
     {
         $microtime = microtime(true);
         $this->trigger('start', [$microtime]);
         // Begin
-        $this->setCurl(preg_match('/https\:/', $license->url));
+        $this->setCurl(preg_match('/https\:/', $license->url), $bypassAuthorization);
         $this->resolveEndpoint( $endpoint, $license );
         // Make call
         $url = $license->url.$endpoint;
         $this->trigger('endpoint', [$endpoint, $url]);
-        curl_setopt( $this->curl, CURLOPT_URL, $url);
         // Set method
         $this->trigger('request', [$license->request]);
         switch ($method) {
             case 'GET':
                 curl_setopt($this->curl, CURLOPT_POST, 0);
+                if ($license->request && count($license->request) > 0)
+                    $url .= '?' . http_build_query($license->request);
                 break;
             case 'POST':
                 curl_setopt($this->curl, CURLOPT_POST, 1);
@@ -147,6 +176,7 @@ class Client
                 ));     
                 break;
         }
+        curl_setopt( $this->curl, CURLOPT_URL, $url);
         // Get response
         $this->response = curl_exec($this->curl);
         if (curl_errno($this->curl)) {
@@ -168,8 +198,11 @@ class Client
      *
      * @see http://us3.php.net/manual/en/book.curl.php
      * @see https://gist.github.com/salsalabs/e24c2466496860975e8a
+     *
+     * @param bool $is_https
+     * @param bool $bypassAuthorization Bypass authorization header.
      */
-    private function setCurl($is_https = false)
+    private function setCurl($is_https = false, $bypassAuthorization = false)
     {
         // Init
         $this->curl = curl_init();
@@ -186,6 +219,17 @@ class Client
         ));
         if ($is_https)
             $this->setSSL();
+        // Headers
+        if ($this->headers && count($this->headers)) {
+            $headers = [];
+            foreach ($this->headers as $key => $value) {
+                if ( $bypassAuthorization && $key === 'Authorization' )
+                    continue;
+                $headers[] = $key . ': ' . $value;
+            }
+            curl_setopt($this->curl, CURLOPT_HTTPHEADER, $headers);
+            $this->trigger('headers', [$headers]);
+        }
     }
     /**
      * Sets SSL curl properties when requesting an https url.

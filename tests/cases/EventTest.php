@@ -7,7 +7,7 @@ use LicenseKeys\Utility\LicenseRequest;
  * Tests EventTest class.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.2.0
+ * @version 1.2.2
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -109,5 +109,29 @@ class EventTest extends Api_TestCase
         $this->assertNotNull($url);
         $this->assertEquals('/wp-json/woo-license-keys/v1/validate', $endpoint);
         $this->assertEquals('https://google.com/wp-json/woo-license-keys/v1/validate', $url);
+    }
+    /**
+     * Tests event.
+     * @since 1.2.2
+     * @group events
+     * @group headers
+     */
+    public function testEventHeaders()
+    {
+        // Prepare
+        $headers = [];
+        $license = $this->getLicenseRequestMock('{"settings":{"url":"https://google.com/"},"request":[],"data":[]}');
+        // Execute
+        $response = Client::instance()
+            ->header(null)
+            ->header('Test-token', 'XyNc')
+            ->on('headers', function($setHeaders) use(&$headers) {
+                $headers = $setHeaders;
+            })
+            ->call('gmail', $license, 'GET');
+        // Assert
+        $this->assertNotEmpty($headers);
+        $this->assertCount(1, $headers);
+        $this->assertEquals('Test-token: XyNc', $headers[0]);
     }
 }

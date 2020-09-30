@@ -87,4 +87,53 @@ class ClientTest extends Api_TestCase
         $this->assertEquals(false, $options[CURLOPT_COOKIESESSION]);
         $this->assertEquals('/tmp/phpunit_files/', $options[CURLOPT_COOKIEFILE]);
     }
+    /**
+     * Tests authorization header bypass.
+     * @since 1.2.2
+     * @group headers
+     */
+    public function testAuthorizationHeader()
+    {
+        // Prepare
+        $headers = [];
+        $license = $this->getLicenseRequestMock('{"settings":{"url":"https://google.com/"},"request":[],"data":[]}');
+        // Execute
+        $response = Client::instance()
+            ->header(null)
+            ->header('Authorization', '123')
+            ->header('Test-token', 'Bypass')
+            ->on('headers', function($setHeaders) use(&$headers) {
+                $headers = $setHeaders;
+            })
+            ->call('gmail', $license, 'GET');
+        // Assert
+        $this->assertNotEmpty($headers);
+        $this->assertCount(2, $headers);
+        $this->assertEquals('Authorization: 123', $headers[0]);
+        $this->assertEquals('Test-token: Bypass', $headers[1]);
+    }
+    /**
+     * Tests authorization header bypass.
+     * @since 1.2.2
+     * @group headers
+     */
+    public function testAuthorizationHeaderByPass()
+    {
+        // Prepare
+        $headers = [];
+        $license = $this->getLicenseRequestMock('{"settings":{"url":"https://google.com/"},"request":[],"data":[]}');
+        // Execute
+        $response = Client::instance()
+            ->header(null)
+            ->header('Authorization', '123')
+            ->header('Test-token', 'Bypass')
+            ->on('headers', function($setHeaders) use(&$headers) {
+                $headers = $setHeaders;
+            })
+            ->call('gmail', $license, 'GET', true);
+        // Assert
+        $this->assertNotEmpty($headers);
+        $this->assertCount(1, $headers);
+        $this->assertEquals('Test-token: Bypass', $headers[0]);
+    }
 }

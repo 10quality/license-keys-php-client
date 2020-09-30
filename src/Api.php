@@ -10,7 +10,7 @@ use Closure;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.1.0
+ * @version 1.2.2
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -231,6 +231,33 @@ class Api
                 $license->data = ['errors' => $response->errors];
             $license->touch();
             $setRequest((string)$license);
+        }
+        return $response;
+    }
+    /**
+     * Returns token endpoint's response.
+     * @since 1.0.10
+     *
+     * @param Client  $client     Client to use for api calls.
+     * @param Closure $getRequest Callable that returns a LicenseRequest.
+     *
+     * @throws Exception when LicenseRequest is not present.
+     *
+     * @return object|stdClass
+     */
+    public static function token(Client $client, Closure $getRequest)
+    {
+        // Prepare
+        $license = $getRequest();
+        if (!is_a($license, LicenseRequest::class))
+            throw new Exception('Closure must return an object instance of LicenseRequest.');
+        // Call
+        $response = null;
+        try {
+            $response = $client->call('license_key_token', $license, 'GET', true);
+        } catch (Exception $e) {
+            if (strpos($e->getMessage(), 'Could not resolve host') === false)
+                throw $e;
         }
         return $response;
     }

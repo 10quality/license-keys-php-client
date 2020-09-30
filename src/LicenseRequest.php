@@ -87,7 +87,6 @@ class LicenseRequest
     /**
      * Creates basic license request.
      * @since 1.0.0
-     * @since 1.0.6 Supports retries.
      *
      * @param string $url            Base API url.
      * @param string $store_code     Store code.
@@ -102,18 +101,48 @@ class LicenseRequest
     {
         $license = [
             'settings'      => [
-                                'url'               => $url,
-                                'frequency'         => $frequency === null ? self::DAILY_FREQUENCY : $frequency,
-                                'next_check'        => 0,
-                                'version'           => '1.2.0',
-                                'retries'           => 0,
-                                'handler'           => $handler,
-                            ],
+                'url'               => $url,
+                'frequency'         => $frequency === null ? self::DAILY_FREQUENCY : $frequency,
+                'next_check'        => 0,
+                'version'           => '1.2.0',
+                'retries'           => 0,
+                'handler'           => $handler,
+            ],
             'request'       => [
-                                'store_code'        => $store_code,
-                                'sku'               => $sku,
-                                'license_key'       => $license_key,
-                            ],
+                'store_code'        => $store_code,
+                'sku'               => $sku,
+                'license_key'       => $license_key,
+            ],
+            'data'          => [],
+            'meta'          => [],
+        ];
+        return new self(json_encode($license));
+    }
+    /**
+     * Creates license request for token endpoint.
+     * @since 1.2.2
+     *
+     * @param string $url         Base API url.
+     * @param string $license_key Customer license key.
+     * @param string $handler     API handler.
+     *
+     * @return object|LicenseRequest
+     */
+    public static function token($url, $license_key, $handler = null)
+    {
+        $license = [
+            'settings'      => [
+                'url'               => $url,
+                'frequency'         => self::DAILY_FREQUENCY,
+                'next_check'        => 0,
+                'version'           => '1.2.0',
+                'retries'           => 0,
+                'handler'           => $handler,
+            ],
+            'request'       => [
+                'license_key'       => $license_key,
+                'grant_type'        => 'license_key',
+            ],
             'data'          => [],
             'meta'          => [],
         ];

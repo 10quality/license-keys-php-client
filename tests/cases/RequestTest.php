@@ -6,7 +6,7 @@ use LicenseKeys\Utility\LicenseRequest;
  * Tests RequestTest class.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version 1.2.0
+ * @version 1.2.2
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -310,6 +310,45 @@ class RequestTest extends Api_TestCase
             'wp_rest'
         );
         // Assert properties
+        $this->assertInternalType('string', $license->handler);
+        $this->assertEquals('wp_rest', $license->handler);
+    }
+    /**
+     * Tests static constructor.
+     * @since 1.2.2
+     * @group token
+     * @group request
+     */
+    public function testTokenConstructor()
+    {
+        // Prepare
+        $license = LicenseRequest::token(
+            'http://localhost/test',
+            'aKey-777'
+        );
+        // Assert object
+        $this->assertInstanceOf(LicenseRequest::class, $license);
+        $this->assertTrue(is_object($license));
+        // Assert properties
+        $this->assertEquals('http://localhost/test', $license->url);
+        // Assert request data
+        $this->assertEquals('aKey-777', $license->request['license_key']);
+    }
+    /**
+     * Tests static constructor.
+     * @since 1.2.2
+     * @group token
+     * @group request
+     */
+    public function testTokenConstructorHandler()
+    {
+        // Prepare
+        $license = LicenseRequest::token(
+            'http://localhost/test',
+            'aKey-777',
+            'wp_rest'
+        );
+        // Assert object
         $this->assertInternalType('string', $license->handler);
         $this->assertEquals('wp_rest', $license->handler);
     }
