@@ -9,7 +9,7 @@ use Exception;
  *
  * @link https://www.10quality.com/product/woocommerce-license-keys/
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version php5-1.0.5
+ * @version php5-1.2.2
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -18,10 +18,7 @@ class Api
     /**
      * Activates a license key.
      * Returns call response.
-     * @since 1.0.0
-     * @since php5-1.0.0 Callables instead of closures.
-     * @since php5-1.0.1 Class calling.
-     * @since php5-1.0.3 Bug fixes.
+     * @since php5-1.0.0
      *
      * @param Client   $client      Client to use for api calls.
      * @param callable $getCallable Callable that returns a LicenseRequest.
@@ -52,13 +49,7 @@ class Api
     /**
      * Validates a license key.
      * Returns flag indicating if license key is valid.
-     * @since 1.0.0
-     * @since 1.0.3 Force parameter added.
-     * @since 1.0.4 Checks if license key is empty.
-     * @since php5-1.0.0 Callables instead of closures.
-     * @since php5-1.0.1 Class calling.
-     * @since php5-1.0.2 Connection retries.
-     * @since php5-1.0.3 Bug fixes.
+     * @since php5-1.0.0
      *
      * @param Client   $client         Client to use for api calls.
      * @param callable $getCallable    Callable that returns a LicenseRequest.
@@ -141,12 +132,7 @@ class Api
     /**
      * Deactivates a license key.
      * Returns call response.
-     * @since 1.0.0
-     * @since 1.0.1 Removes license on activation_id errors as well.
-     * @since php5-1.0.0 Callables instead of closures.
-     * @since php5-1.0.1 Class calling.
-     * @since php5-1.0.2 Versioning support.
-     * @since php5-1.0.3 Bug fixes.
+     * @since php5-1.0.0
      *
      * @param Client   $client      Client to use for api calls.
      * @param callable $getCallable Callable that returns a LicenseRequest.
@@ -244,6 +230,33 @@ class Api
                 $license->data = ['errors' => $response->errors];
             $license->touch();
             call_user_func_array($setCallable, [(string)$license]);
+        }
+        return $response;
+    }
+    /**
+     * Returns token endpoint's response.
+     * @since php5-1.2.2
+     *
+     * @param Client  $client      Client to use for api calls.
+     * @param Closure $getCallable Callable that returns a LicenseRequest.
+     *
+     * @throws Exception when LicenseRequest is not present.
+     *
+     * @return object|stdClass
+     */
+    public static function token(Client $client, $getCallable)
+    {
+        // Prepare
+        $license = call_user_func_array($getCallable, []);
+        if (!is_a($license, 'LicenseKeys\\Utility\\LicenseRequest'))
+            throw new Exception('Callable must return an object instance of LicenseRequest.');
+        // Call
+        $response = null;
+        try {
+            $response = $client->call('license_key_token', $license, 'GET', true);
+        } catch (Exception $e) {
+            if (strpos($e->getMessage(), 'Could not resolve host') === false)
+                throw $e;
         }
         return $response;
     }

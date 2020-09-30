@@ -7,7 +7,7 @@ use Exception;
  * License Key API request.
  *
  * @author Alejandro Mostajo <info@10quality.com> 
- * @version php5-1.2.0
+ * @version php5-1.2.2
  * @package LicenseKeys\Utility
  * @license MIT
  */
@@ -99,18 +99,48 @@ class LicenseRequest
     {
         $license = [
             'settings'  => [
-                            'url'               => $url,
-                            'frequency'         => $frequency,
-                            'next_check'        => 0,
-                            'version'           => '1.2.0',
-                            'retries'           => 0,
-                            'handler'           => $handler,
-                        ],
+                'url'               => $url,
+                'frequency'         => $frequency,
+                'next_check'        => 0,
+                'version'           => '1.2.0',
+                'retries'           => 0,
+                'handler'           => $handler,
+            ],
             'request'   => [
-                            'store_code'        => $store_code,
-                            'sku'               => $sku,
-                            'license_key'       => $license_key,
-                        ],
+                'store_code'        => $store_code,
+                'sku'               => $sku,
+                'license_key'       => $license_key,
+            ],
+            'data'      => [],
+            'meta'      => [],
+        ];
+        return new self(json_encode($license));
+    }
+    /**
+     * Creates license request for token endpoint.
+     * @since 1.2.2
+     *
+     * @param string $url         Base API url.
+     * @param string $license_key Customer license key.
+     * @param string $handler     API handler.
+     *
+     * @return object|LicenseRequest
+     */
+    public static function token($url, $license_key, $handler = null)
+    {
+        $license = [
+            'settings'      => [
+                'url'               => $url,
+                'frequency'         => self::DAILY_FREQUENCY,
+                'next_check'        => 0,
+                'version'           => '1.2.0',
+                'retries'           => 0,
+                'handler'           => $handler,
+            ],
+            'request'       => [
+                'license_key'       => $license_key,
+                'grant_type'        => 'license_key',
+            ],
             'data'      => [],
             'meta'      => [],
         ];
